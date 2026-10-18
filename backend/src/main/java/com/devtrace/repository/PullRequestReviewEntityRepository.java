@@ -10,4 +10,5 @@ import java.util.List;
 public interface PullRequestReviewEntityRepository extends JpaRepository<PullRequestReviewEntity, String> {
     List<PullRequestReviewEntity> findByPullRequestId(String pullRequestId);
     List<PullRequestReviewEntity> findByPullRequestIdOrderBySubmittedAtAsc(String pullRequestId);
+    List<PullRequestReviewEntity> findByPullRequestRepositoryIdOrderBySubmittedAtAsc(String repositoryId);
 }

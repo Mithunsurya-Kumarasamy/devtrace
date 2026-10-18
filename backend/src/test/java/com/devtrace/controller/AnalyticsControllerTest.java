@@ -83,4 +83,19 @@ class AnalyticsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray());
     }
+
+    @Test
+    @DisplayName("GET /api/repositories/{id}/analytics/process-mining returns 200 and report schema")
+    void testGetProcessMining() throws Exception {
+        mockMvc.perform(get("/api/repositories/" + repo.getId() + "/analytics/process-mining")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.repositoryId").value(repo.getId()))
+                .andExpect(jsonPath("$.stages").isArray())
+                .andExpect(jsonPath("$.stages.length()").value(3))
+                .andExpect(jsonPath("$.bottleneck").exists())
+                .andExpect(jsonPath("$.variants").isArray())
+                .andExpect(jsonPath("$.changesRequestedSummary").exists())
+                .andExpect(jsonPath("$.missingDataLimitations").isArray());
+    }
 }

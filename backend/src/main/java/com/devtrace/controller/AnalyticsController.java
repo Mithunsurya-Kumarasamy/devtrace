@@ -1,8 +1,10 @@
 package com.devtrace.controller;
 
 import com.devtrace.dto.analytics.*;
+import com.devtrace.dto.processmining.ProcessMiningReportDto;
 import com.devtrace.entity.ReleaseEntity;
 import com.devtrace.service.analytics.CoreAnalyticsService;
+import com.devtrace.service.processmining.ProcessMiningService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
@@ -15,9 +17,17 @@ import org.springframework.web.bind.annotation.*;
 public class AnalyticsController {
 
     private final CoreAnalyticsService analyticsService;
+    private final ProcessMiningService processMiningService;
 
-    public AnalyticsController(CoreAnalyticsService analyticsService) {
+    public AnalyticsController(CoreAnalyticsService analyticsService, ProcessMiningService processMiningService) {
         this.analyticsService = analyticsService;
+        this.processMiningService = processMiningService;
+    }
+
+    @GetMapping("/analytics/process-mining")
+    @Operation(summary = "Get PR lifecycle process mining report", description = "Analyzes PR stage transitions, bottleneck identification, process variants, and rework cycles.")
+    public ResponseEntity<ProcessMiningReportDto> getProcessMining(@PathVariable String id) {
+        return ResponseEntity.ok(processMiningService.analyzeProcessMining(id));
     }
 
     @GetMapping("/analytics/overview")
