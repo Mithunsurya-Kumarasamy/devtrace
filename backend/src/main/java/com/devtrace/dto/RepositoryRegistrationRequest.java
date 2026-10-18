@@ -6,10 +6,12 @@ import jakarta.validation.constraints.Pattern;
 public class RepositoryRegistrationRequest {
 
     @NotBlank(message = "Owner must not be blank")
+    @jakarta.validation.constraints.Size(min = 1, max = 100, message = "Owner name must be between 1 and 100 characters")
     @Pattern(regexp = "^[a-zA-Z0-9_.-]+$", message = "Invalid GitHub owner name format")
     private String owner;
 
     @NotBlank(message = "Repository name must not be blank")
+    @jakarta.validation.constraints.Size(min = 1, max = 100, message = "Repository name must be between 1 and 100 characters")
     @Pattern(regexp = "^[a-zA-Z0-9_.-]+$", message = "Invalid GitHub repository name format")
     private String name;
 

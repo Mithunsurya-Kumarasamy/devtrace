@@ -40,6 +40,11 @@ public class GitHubApiClient {
                 .build();
         this.apiUrl = apiUrl.replaceAll("/+$", "");
         this.githubToken = githubToken;
+        if (githubToken != null && !githubToken.isBlank()) {
+            log.info("GitHubApiClient configured with bearer token: {}", com.devtrace.util.SecuritySanitizationUtil.maskToken(githubToken));
+        } else {
+            log.warn("GitHubApiClient configured without token; rate limits will be restricted to 60 req/hr unauthenticated");
+        }
     }
 
     private HttpHeaders createHeaders() {
