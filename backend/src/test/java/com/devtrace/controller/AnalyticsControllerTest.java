@@ -135,4 +135,17 @@ class AnalyticsControllerTest {
                 .andExpect(jsonPath("$.knowledgeSilos").isArray())
                 .andExpect(jsonPath("$.collaborationHealthAssessment").exists());
     }
+
+    @Test
+    @DisplayName("GET /api/repositories/{id}/analytics/issues-nlp returns 200 and issues NLP report schema")
+    void testGetIssuesNlp() throws Exception {
+        mockMvc.perform(get("/api/repositories/" + repo.getId() + "/analytics/issues-nlp")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.repositoryId").value(repo.getId()))
+                .andExpect(jsonPath("$.categories").isArray())
+                .andExpect(jsonPath("$.categories.length()").value(5))
+                .andExpect(jsonPath("$.evaluation").exists())
+                .andExpect(jsonPath("$.evaluation.categoryMetrics").isArray());
+    }
 }

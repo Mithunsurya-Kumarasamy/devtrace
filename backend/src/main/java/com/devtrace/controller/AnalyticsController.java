@@ -4,11 +4,13 @@ import com.devtrace.dto.analytics.*;
 import com.devtrace.dto.churn.CodebaseHotspotsReportDto;
 import com.devtrace.dto.churn.RepositoryChurnReportDto;
 import com.devtrace.dto.collaboration.CollaborationNetworkDto;
+import com.devtrace.dto.issuenlp.IssueNlpReportDto;
 import com.devtrace.dto.processmining.ProcessMiningReportDto;
 import com.devtrace.entity.ReleaseEntity;
 import com.devtrace.service.analytics.CoreAnalyticsService;
 import com.devtrace.service.churn.ChurnAnalyticsService;
 import com.devtrace.service.collaboration.CollaborationGraphService;
+import com.devtrace.service.issuenlp.IssueNlpService;
 import com.devtrace.service.processmining.ProcessMiningService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,15 +27,24 @@ public class AnalyticsController {
     private final ProcessMiningService processMiningService;
     private final ChurnAnalyticsService churnAnalyticsService;
     private final CollaborationGraphService collaborationGraphService;
+    private final IssueNlpService issueNlpService;
 
     public AnalyticsController(CoreAnalyticsService analyticsService,
                                ProcessMiningService processMiningService,
                                ChurnAnalyticsService churnAnalyticsService,
-                               CollaborationGraphService collaborationGraphService) {
+                               CollaborationGraphService collaborationGraphService,
+                               IssueNlpService issueNlpService) {
         this.analyticsService = analyticsService;
         this.processMiningService = processMiningService;
         this.churnAnalyticsService = churnAnalyticsService;
         this.collaborationGraphService = collaborationGraphService;
+        this.issueNlpService = issueNlpService;
+    }
+
+    @GetMapping("/analytics/issues-nlp")
+    @Operation(summary = "Get issue NLP categorization and evaluation report", description = "Performs text classification and weak supervision evaluation across bug, feature, documentation, technical debt, and question categories.")
+    public ResponseEntity<IssueNlpReportDto> getIssuesNlp(@PathVariable String id) {
+        return ResponseEntity.ok(issueNlpService.analyzeIssuesNlp(id));
     }
 
     @GetMapping("/collaboration-network")
