@@ -22,4 +22,7 @@ public interface CommitEntityRepository extends JpaRepository<CommitEntity, Stri
 
     @Query("SELECT COUNT(DISTINCT c.authorEmail) FROM CommitEntity c WHERE c.repository.id = :repoId")
     long countDistinctAuthorsByRepositoryId(@Param("repoId") String repoId);
+
+    @Query("SELECT COUNT(c) FROM CommitEntity c WHERE c.repository.id = :repoId AND (LOWER(c.authorName) = LOWER(:login) OR LOWER(c.authorEmail) LIKE LOWER(CONCAT('%', :login, '%')))")
+    long countCommitsByRepositoryIdAndAuthor(@Param("repoId") String repoId, @Param("login") String login);
 }
