@@ -3,10 +3,12 @@ package com.devtrace.controller;
 import com.devtrace.dto.analytics.*;
 import com.devtrace.dto.churn.CodebaseHotspotsReportDto;
 import com.devtrace.dto.churn.RepositoryChurnReportDto;
+import com.devtrace.dto.collaboration.CollaborationNetworkDto;
 import com.devtrace.dto.processmining.ProcessMiningReportDto;
 import com.devtrace.entity.ReleaseEntity;
 import com.devtrace.service.analytics.CoreAnalyticsService;
 import com.devtrace.service.churn.ChurnAnalyticsService;
+import com.devtrace.service.collaboration.CollaborationGraphService;
 import com.devtrace.service.processmining.ProcessMiningService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,13 +24,22 @@ public class AnalyticsController {
     private final CoreAnalyticsService analyticsService;
     private final ProcessMiningService processMiningService;
     private final ChurnAnalyticsService churnAnalyticsService;
+    private final CollaborationGraphService collaborationGraphService;
 
     public AnalyticsController(CoreAnalyticsService analyticsService,
                                ProcessMiningService processMiningService,
-                               ChurnAnalyticsService churnAnalyticsService) {
+                               ChurnAnalyticsService churnAnalyticsService,
+                               CollaborationGraphService collaborationGraphService) {
         this.analyticsService = analyticsService;
         this.processMiningService = processMiningService;
         this.churnAnalyticsService = churnAnalyticsService;
+        this.collaborationGraphService = collaborationGraphService;
+    }
+
+    @GetMapping("/collaboration-network")
+    @Operation(summary = "Get contributor collaboration network", description = "Analyzes graph centrality, community modularity, interaction density, and single-contributor knowledge silos.")
+    public ResponseEntity<CollaborationNetworkDto> getCollaborationNetwork(@PathVariable String id) {
+        return ResponseEntity.ok(collaborationGraphService.getCollaborationNetwork(id));
     }
 
     @GetMapping("/analytics/churn")

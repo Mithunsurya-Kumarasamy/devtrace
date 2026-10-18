@@ -122,4 +122,17 @@ class AnalyticsControllerTest {
                 .andExpect(jsonPath("$.hotspots").isArray())
                 .andExpect(jsonPath("$.architecturalRecommendations").isArray());
     }
+
+    @Test
+    @DisplayName("GET /api/repositories/{id}/collaboration-network returns 200 and network schema")
+    void testGetCollaborationNetwork() throws Exception {
+        mockMvc.perform(get("/api/repositories/" + repo.getId() + "/collaboration-network")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.repositoryId").value(repo.getId()))
+                .andExpect(jsonPath("$.nodes").isArray())
+                .andExpect(jsonPath("$.edges").isArray())
+                .andExpect(jsonPath("$.knowledgeSilos").isArray())
+                .andExpect(jsonPath("$.collaborationHealthAssessment").exists());
+    }
 }
