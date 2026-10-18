@@ -5,6 +5,7 @@ import com.devtrace.dto.anomaly.AnomalyDetectionReportDto;
 import com.devtrace.dto.churn.CodebaseHotspotsReportDto;
 import com.devtrace.dto.churn.RepositoryChurnReportDto;
 import com.devtrace.dto.collaboration.CollaborationNetworkDto;
+import com.devtrace.dto.dependency.DependencyGraphReportDto;
 import com.devtrace.dto.issuenlp.IssueNlpReportDto;
 import com.devtrace.dto.processmining.ProcessMiningReportDto;
 import com.devtrace.entity.ReleaseEntity;
@@ -12,6 +13,7 @@ import com.devtrace.service.analytics.CoreAnalyticsService;
 import com.devtrace.service.anomaly.AnomalyDetectionService;
 import com.devtrace.service.churn.ChurnAnalyticsService;
 import com.devtrace.service.collaboration.CollaborationGraphService;
+import com.devtrace.service.dependency.DependencyGraphService;
 import com.devtrace.service.issuenlp.IssueNlpService;
 import com.devtrace.service.processmining.ProcessMiningService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,19 +33,28 @@ public class AnalyticsController {
     private final CollaborationGraphService collaborationGraphService;
     private final IssueNlpService issueNlpService;
     private final AnomalyDetectionService anomalyDetectionService;
+    private final DependencyGraphService dependencyGraphService;
 
     public AnalyticsController(CoreAnalyticsService analyticsService,
                                ProcessMiningService processMiningService,
                                ChurnAnalyticsService churnAnalyticsService,
                                CollaborationGraphService collaborationGraphService,
                                IssueNlpService issueNlpService,
-                               AnomalyDetectionService anomalyDetectionService) {
+                               AnomalyDetectionService anomalyDetectionService,
+                               DependencyGraphService dependencyGraphService) {
         this.analyticsService = analyticsService;
         this.processMiningService = processMiningService;
         this.churnAnalyticsService = churnAnalyticsService;
         this.collaborationGraphService = collaborationGraphService;
         this.issueNlpService = issueNlpService;
         this.anomalyDetectionService = anomalyDetectionService;
+        this.dependencyGraphService = dependencyGraphService;
+    }
+
+    @GetMapping("/dependency-graph")
+    @Operation(summary = "Get module dependency graph", description = "Analyzes source code dependency coupling, instability, circular dependencies, and hotspot overlap.")
+    public ResponseEntity<DependencyGraphReportDto> getDependencyGraph(@PathVariable String id) {
+        return ResponseEntity.ok(dependencyGraphService.analyzeDependencyGraph(id));
     }
 
     @GetMapping("/anomalies")

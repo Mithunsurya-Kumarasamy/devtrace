@@ -160,4 +160,17 @@ class AnalyticsControllerTest {
                 .andExpect(jsonPath("$.baselines.length()").value(4))
                 .andExpect(jsonPath("$.recentAnomalies").isArray());
     }
+
+    @Test
+    @DisplayName("GET /api/repositories/{id}/dependency-graph returns 200 and dependency graph schema")
+    void testGetDependencyGraph() throws Exception {
+        mockMvc.perform(get("/api/repositories/" + repo.getId() + "/dependency-graph")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.repositoryId").value(repo.getId()))
+                .andExpect(jsonPath("$.nodes").isArray())
+                .andExpect(jsonPath("$.edges").isArray())
+                .andExpect(jsonPath("$.circularDependencies").isArray())
+                .andExpect(jsonPath("$.architecturalSummary").exists());
+    }
 }
