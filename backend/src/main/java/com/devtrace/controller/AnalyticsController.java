@@ -1,9 +1,12 @@
 package com.devtrace.controller;
 
 import com.devtrace.dto.analytics.*;
+import com.devtrace.dto.churn.CodebaseHotspotsReportDto;
+import com.devtrace.dto.churn.RepositoryChurnReportDto;
 import com.devtrace.dto.processmining.ProcessMiningReportDto;
 import com.devtrace.entity.ReleaseEntity;
 import com.devtrace.service.analytics.CoreAnalyticsService;
+import com.devtrace.service.churn.ChurnAnalyticsService;
 import com.devtrace.service.processmining.ProcessMiningService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,10 +21,31 @@ public class AnalyticsController {
 
     private final CoreAnalyticsService analyticsService;
     private final ProcessMiningService processMiningService;
+    private final ChurnAnalyticsService churnAnalyticsService;
 
-    public AnalyticsController(CoreAnalyticsService analyticsService, ProcessMiningService processMiningService) {
+    public AnalyticsController(CoreAnalyticsService analyticsService,
+                               ProcessMiningService processMiningService,
+                               ChurnAnalyticsService churnAnalyticsService) {
         this.analyticsService = analyticsService;
         this.processMiningService = processMiningService;
+        this.churnAnalyticsService = churnAnalyticsService;
+    }
+
+    @GetMapping("/analytics/churn")
+    @Operation(summary = "Get repository code churn analysis", description = "Calculates additions, deletions, net growth, and file/directory churn across a time window.")
+    public ResponseEntity<RepositoryChurnReportDto> getChurn(
+            @PathVariable String id,
+            @RequestParam(required = false, defaultValue = "30") int days) {
+        return ResponseEntity.ok(churnAnalyticsService.calculateChurn(id, days));
+    }
+
+    @GetMapping("/analytics/hotspots")
+    @Operation(summary = "Get codebase hotspots", description = "Identifies architectural hotspots by combining churn volume, modification frequency, defect association, and recency weighting.")
+    public ResponseEntity<CodebaseHotspotsReportDto> getHotspots(
+            @PathVariable String id,
+            @RequestParam(required = false, defaultValue = "90") int days,
+            @RequestParam(required = false, defaultValue = "20") int limit) {
+        return ResponseEntity.ok(churnAnalyticsService.calculateHotspots(id, days, limit));
     }
 
     @GetMapping("/analytics/process-mining")

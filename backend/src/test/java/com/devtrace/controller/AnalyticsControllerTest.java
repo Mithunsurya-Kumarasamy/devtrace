@@ -98,4 +98,28 @@ class AnalyticsControllerTest {
                 .andExpect(jsonPath("$.changesRequestedSummary").exists())
                 .andExpect(jsonPath("$.missingDataLimitations").isArray());
     }
+
+    @Test
+    @DisplayName("GET /api/repositories/{id}/analytics/churn returns 200 and churn report schema")
+    void testGetChurn() throws Exception {
+        mockMvc.perform(get("/api/repositories/" + repo.getId() + "/analytics/churn?days=30")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.repositoryId").value(repo.getId()))
+                .andExpect(jsonPath("$.timeWindowDays").value(30))
+                .andExpect(jsonPath("$.topModifiedFiles").isArray())
+                .andExpect(jsonPath("$.directoryChurn").isArray());
+    }
+
+    @Test
+    @DisplayName("GET /api/repositories/{id}/analytics/hotspots returns 200 and hotspot report schema")
+    void testGetHotspots() throws Exception {
+        mockMvc.perform(get("/api/repositories/" + repo.getId() + "/analytics/hotspots?days=90&limit=15")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.repositoryId").value(repo.getId()))
+                .andExpect(jsonPath("$.timeWindowDays").value(90))
+                .andExpect(jsonPath("$.hotspots").isArray())
+                .andExpect(jsonPath("$.architecturalRecommendations").isArray());
+    }
 }
