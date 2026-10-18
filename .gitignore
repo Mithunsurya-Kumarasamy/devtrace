@@ -76,3 +76,8 @@ sdist/
 .venv
 venv/
 ENV/
+
+# Local database storage
+backend/data/
+*.mv.db
+*.trace.db
