@@ -1,5 +1,18 @@
 import axios from 'axios';
-import { HealthResponse, Repository, SyncJob, RepositoryOverview } from '../types';
+import {
+  HealthResponse,
+  Repository,
+  SyncJob,
+  RepositoryOverview,
+  ProcessMiningReport,
+  ChurnSummaryReport,
+  HotspotReport,
+  CollaborationGraphReport,
+  IssueNlpReport,
+  AnomalyDetectionReport,
+  PullRequestRiskAssessment,
+  DependencyGraphReport,
+} from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -44,44 +57,55 @@ export const api = {
     return response.data;
   },
 
-  // Analytics
-  getOverview: async (repoId: string): Promise<RepositoryOverview> => {
-    const response = await apiClient.get<RepositoryOverview>(`/repositories/${repoId}/analytics/overview`);
+  // Analytics & Intelligence
+  getOverview: async (repoId: string, days: number = 90): Promise<RepositoryOverview> => {
+    const response = await apiClient.get<RepositoryOverview>(`/repositories/${repoId}/analytics/overview?days=${days}`);
     return response.data;
   },
 
-  getProcessMining: async (repoId: string) => {
-    const response = await apiClient.get(`/repositories/${repoId}/analytics/process-mining`);
+  getProcessMining: async (repoId: string, days: number = 90): Promise<ProcessMiningReport> => {
+    const response = await apiClient.get<ProcessMiningReport>(`/repositories/${repoId}/analytics/process-mining?days=${days}`);
     return response.data;
   },
 
-  getChurn: async (repoId: string) => {
-    const response = await apiClient.get(`/repositories/${repoId}/analytics/churn`);
+  getChurn: async (repoId: string, days: number = 90): Promise<ChurnSummaryReport> => {
+    const response = await apiClient.get<ChurnSummaryReport>(`/repositories/${repoId}/analytics/churn?days=${days}`);
     return response.data;
   },
 
-  getHotspots: async (repoId: string) => {
-    const response = await apiClient.get(`/repositories/${repoId}/analytics/hotspots`);
+  getHotspots: async (repoId: string, days: number = 90): Promise<HotspotReport> => {
+    const response = await apiClient.get<HotspotReport>(`/repositories/${repoId}/analytics/hotspots?days=${days}`);
     return response.data;
   },
 
-  getCollaborationNetwork: async (repoId: string) => {
-    const response = await apiClient.get(`/repositories/${repoId}/collaboration-network`);
+  getCollaborationNetwork: async (repoId: string, days: number = 90): Promise<CollaborationGraphReport> => {
+    const response = await apiClient.get<CollaborationGraphReport>(`/repositories/${repoId}/collaboration-network?days=${days}`);
     return response.data;
   },
 
-  getDependencyGraph: async (repoId: string) => {
-    const response = await apiClient.get(`/repositories/${repoId}/dependency-graph`);
+  getIssuesNlp: async (repoId: string): Promise<IssueNlpReport> => {
+    const response = await apiClient.get<IssueNlpReport>(`/repositories/${repoId}/analytics/issues-nlp`);
     return response.data;
   },
 
-  getAnomalies: async (repoId: string) => {
-    const response = await apiClient.get(`/repositories/${repoId}/anomalies`);
+  getAnomalies: async (repoId: string, days: number = 90): Promise<AnomalyDetectionReport> => {
+    const response = await apiClient.get<AnomalyDetectionReport>(`/repositories/${repoId}/anomalies?days=${days}`);
     return response.data;
   },
 
-  getPrRisk: async (prId: string) => {
-    const response = await apiClient.get(`/pull-requests/${prId}/risk`);
+  getDependencyGraph: async (repoId: string): Promise<DependencyGraphReport> => {
+    const response = await apiClient.get<DependencyGraphReport>(`/repositories/${repoId}/dependency-graph`);
+    return response.data;
+  },
+
+  // PR Risk Guardrails
+  getPrRisk: async (prId: string): Promise<PullRequestRiskAssessment> => {
+    const response = await apiClient.get<PullRequestRiskAssessment>(`/pull-requests/${prId}/risk`);
+    return response.data;
+  },
+
+  evaluatePrRisk: async (prId: string): Promise<PullRequestRiskAssessment> => {
+    const response = await apiClient.post<PullRequestRiskAssessment>(`/pull-requests/${prId}/risk/evaluate`);
     return response.data;
   },
 };

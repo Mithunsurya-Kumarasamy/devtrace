@@ -1,37 +1,50 @@
 import React, { useState } from 'react';
 import { Header } from './components/common/Header';
 import { Sidebar, NavTab } from './components/common/Sidebar';
+import { RepositoryProvider } from './context/RepositoryContext';
 import { OverviewPage } from './pages/OverviewPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
+import { ProcessMiningPage } from './pages/ProcessMiningPage';
+import { CollaborationPage } from './pages/CollaborationPage';
+import { CodebasePage } from './pages/CodebasePage';
+import { DependenciesPage } from './pages/DependenciesPage';
+import { IssuesNlpPage } from './pages/IssuesNlpPage';
+import { MlInsightsPage } from './pages/MlInsightsPage';
+import { PrRiskPage } from './pages/PrRiskPage';
+import { RepositoriesPage } from './pages/RepositoriesPage';
+import { SyncJobsPage } from './pages/SyncJobsPage';
 
-export const App: React.FC = () => {
+export const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavTab>('overview');
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       <Header activeTab={activeTab} />
       <div className="flex flex-1">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <main className="flex-1 p-6 overflow-y-auto">
-          {activeTab === 'overview' && <OverviewPage />}
-          {activeTab !== 'overview' && (
-            <div className="dev-card p-12 text-center">
-              <h2 className="text-xl font-semibold text-white capitalize">
-                {activeTab.replace('-', ' ')}
-              </h2>
-              <p className="text-slate-400 mt-2 text-sm max-w-md mx-auto">
-                This intelligence module will be activated in upcoming development phases as backend analytics and Kafka processors are integrated.
-              </p>
-              <button
-                onClick={() => setActiveTab('overview')}
-                className="mt-6 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition"
-              >
-                Return to Overview
-              </button>
-            </div>
-          )}
+        <main className="flex-1 p-6 overflow-y-auto max-w-[1600px] w-full mx-auto">
+          {activeTab === 'overview' && <OverviewPage onNavigateTab={setActiveTab} />}
+          {activeTab === 'analytics' && <AnalyticsPage />}
+          {activeTab === 'process-mining' && <ProcessMiningPage />}
+          {activeTab === 'collaboration' && <CollaborationPage />}
+          {activeTab === 'codebase' && <CodebasePage />}
+          {activeTab === 'dependencies' && <DependenciesPage />}
+          {activeTab === 'issues' && <IssuesNlpPage />}
+          {activeTab === 'ml-insights' && <MlInsightsPage />}
+          {activeTab === 'pr-risk' && <PrRiskPage />}
+          {activeTab === 'repositories' && <RepositoriesPage onNavigateTab={setActiveTab} />}
+          {activeTab === 'sync-jobs' && <SyncJobsPage />}
         </main>
       </div>
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <RepositoryProvider>
+      <AppContent />
+    </RepositoryProvider>
   );
 };
 
