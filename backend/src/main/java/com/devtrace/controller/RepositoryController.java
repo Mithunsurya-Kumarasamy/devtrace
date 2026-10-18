@@ -18,9 +18,11 @@ import java.util.List;
 public class RepositoryController {
 
     private final RepositoryService repositoryService;
+    private final com.devtrace.service.SyncJobService syncJobService;
 
-    public RepositoryController(RepositoryService repositoryService) {
+    public RepositoryController(RepositoryService repositoryService, com.devtrace.service.SyncJobService syncJobService) {
         this.repositoryService = repositoryService;
+        this.syncJobService = syncJobService;
     }
 
     @PostMapping
@@ -41,5 +43,21 @@ public class RepositoryController {
     @Operation(summary = "Get repository by ID", description = "Retrieves metadata and synchronization status for a specific repository.")
     public ResponseEntity<RepositoryResponse> getRepositoryById(@PathVariable String id) {
         return ResponseEntity.ok(repositoryService.getRepositoryById(id));
+    }
+
+    @PostMapping("/{id}/sync")
+    @Operation(summary = "Trigger repository synchronization", description = "Asynchronously initiates repository ingestion via Kafka event pipeline and returns a tracking job ID.")
+    public ResponseEntity<com.devtrace.dto.SyncJobResponse> triggerSync(
+            @PathVariable String id,
+            @RequestParam(required = false, defaultValue = "false") boolean force) {
+        return ResponseEntity.accepted().body(syncJobService.triggerSync(id, force));
+    }
+
+    @GetMapping("/{id}/sync-jobs/{jobId}")
+    @Operation(summary = "Get synchronization job status", description = "Retrieves real-time status, progress percentage, items processed, and diagnostics for an active or past sync job.")
+    public ResponseEntity<com.devtrace.dto.SyncJobResponse> getSyncJob(
+            @PathVariable String id,
+            @PathVariable String jobId) {
+        return ResponseEntity.ok(syncJobService.getSyncJob(id, jobId));
     }
 }
