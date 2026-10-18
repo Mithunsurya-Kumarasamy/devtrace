@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: DevTrace-Test
+  datasource:
+    url: jdbc:h2:mem:devtracetest;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: false
+  flyway:
+    enabled: false
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+    listener:
+      auto-startup: false
+
+server:
+  port: 0
+
+devtrace:
+  version: 1.0.0-test
+  github:
+    api-url: http://localhost:8089
+    token: test-token
