@@ -31,7 +31,7 @@ jobs:
 
       - name: Compile and Run Backend Tests
         working-directory: backend
-        run: mvn test --no-transfer-progress -Dnet.bytebuddy.experimental=true -XX:+EnableDynamicAgentLoading
+        run: mvn test --no-transfer-progress
 
       - name: Archive Test Results
         if: always()
