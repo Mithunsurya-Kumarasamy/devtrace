@@ -1,6 +1,7 @@
 package com.devtrace.controller;
 
 import com.devtrace.dto.analytics.*;
+import com.devtrace.dto.anomaly.AnomalyDetectionReportDto;
 import com.devtrace.dto.churn.CodebaseHotspotsReportDto;
 import com.devtrace.dto.churn.RepositoryChurnReportDto;
 import com.devtrace.dto.collaboration.CollaborationNetworkDto;
@@ -8,6 +9,7 @@ import com.devtrace.dto.issuenlp.IssueNlpReportDto;
 import com.devtrace.dto.processmining.ProcessMiningReportDto;
 import com.devtrace.entity.ReleaseEntity;
 import com.devtrace.service.analytics.CoreAnalyticsService;
+import com.devtrace.service.anomaly.AnomalyDetectionService;
 import com.devtrace.service.churn.ChurnAnalyticsService;
 import com.devtrace.service.collaboration.CollaborationGraphService;
 import com.devtrace.service.issuenlp.IssueNlpService;
@@ -28,17 +30,28 @@ public class AnalyticsController {
     private final ChurnAnalyticsService churnAnalyticsService;
     private final CollaborationGraphService collaborationGraphService;
     private final IssueNlpService issueNlpService;
+    private final AnomalyDetectionService anomalyDetectionService;
 
     public AnalyticsController(CoreAnalyticsService analyticsService,
                                ProcessMiningService processMiningService,
                                ChurnAnalyticsService churnAnalyticsService,
                                CollaborationGraphService collaborationGraphService,
-                               IssueNlpService issueNlpService) {
+                               IssueNlpService issueNlpService,
+                               AnomalyDetectionService anomalyDetectionService) {
         this.analyticsService = analyticsService;
         this.processMiningService = processMiningService;
         this.churnAnalyticsService = churnAnalyticsService;
         this.collaborationGraphService = collaborationGraphService;
         this.issueNlpService = issueNlpService;
+        this.anomalyDetectionService = anomalyDetectionService;
+    }
+
+    @GetMapping("/anomalies")
+    @Operation(summary = "Get repository anomaly detection report", description = "Detects statistical anomalies across commit volume, PR size, review turnaround, and churn volatility using rolling baselines, Z-scores, and IQR bounds.")
+    public ResponseEntity<AnomalyDetectionReportDto> getAnomalies(
+            @PathVariable String id,
+            @RequestParam(required = false, defaultValue = "30") int days) {
+        return ResponseEntity.ok(anomalyDetectionService.detectAndReportAnomalies(id, days));
     }
 
     @GetMapping("/analytics/issues-nlp")

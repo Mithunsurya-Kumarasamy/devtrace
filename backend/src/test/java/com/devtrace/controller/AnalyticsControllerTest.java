@@ -148,4 +148,16 @@ class AnalyticsControllerTest {
                 .andExpect(jsonPath("$.evaluation").exists())
                 .andExpect(jsonPath("$.evaluation.categoryMetrics").isArray());
     }
+
+    @Test
+    @DisplayName("GET /api/repositories/{id}/anomalies returns 200 and anomaly report schema")
+    void testGetAnomalies() throws Exception {
+        mockMvc.perform(get("/api/repositories/" + repo.getId() + "/anomalies?days=30")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.repositoryId").value(repo.getId()))
+                .andExpect(jsonPath("$.baselines").isArray())
+                .andExpect(jsonPath("$.baselines.length()").value(4))
+                .andExpect(jsonPath("$.recentAnomalies").isArray());
+    }
 }
