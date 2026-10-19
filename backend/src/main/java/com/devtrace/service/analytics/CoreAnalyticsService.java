@@ -61,7 +61,7 @@ public class CoreAnalyticsService {
         overview.setTotalPullRequests(pullRequestRepo.countByRepositoryId(repositoryId));
         overview.setOpenPullRequests(pullRequestRepo.findByRepositoryIdAndState(repositoryId, "open").size());
         overview.setTotalIssues(issueRepo.countByRepositoryId(repositoryId));
-        overview.setOpenIssues(issueRepo.findByRepositoryIdAndCategory(repositoryId, "open").size());
+        overview.setOpenIssues((int) issueRepo.countByRepositoryIdAndState(repositoryId, "open"));
         overview.setTotalReleases(releaseRepo.countByRepositoryId(repositoryId));
         overview.setActiveContributors(commitRepo.countDistinctAuthorsByRepositoryId(repositoryId));
 
@@ -156,7 +156,7 @@ public class CoreAnalyticsService {
             List<IssueEntity> issues) {
 
         // 1. Code Stability: ratio of bug issues to total activity
-        long bugCount = issues.stream().filter(i -> "BUG".equalsIgnoreCase(i.getCategory())).count();
+        long bugCount = issues.stream().filter(i -> i.getCategory() != null && (i.getCategory().toUpperCase().contains("BUG") || i.getCategory().toUpperCase().contains("DEFECT"))).count();
         double bugRatio = issues.isEmpty() ? 0.0 : (double) bugCount / issues.size();
         double codeStability = Math.max(20.0, Math.min(100.0, 100.0 - (bugRatio * 60.0)));
 

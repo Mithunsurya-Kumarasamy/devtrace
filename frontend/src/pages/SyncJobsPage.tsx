@@ -42,6 +42,25 @@ export const SyncJobsPage: React.FC = () => {
     }
   };
 
+  // Auto-fetch latest sync job when repo is selected
+  useEffect(() => {
+    if (!selectedRepoId) {
+      setCurrentJob(null);
+      return;
+    }
+    const loadJobs = async () => {
+      try {
+        const jobs = await api.getSyncJobs(selectedRepoId);
+        if (jobs.length > 0) {
+          setCurrentJob(jobs[0]);
+        }
+      } catch (e) {
+        console.warn('Failed to load sync jobs history', e);
+      }
+    };
+    loadJobs();
+  }, [selectedRepoId]);
+
   // Poll job status if RUNNING or PENDING
   useEffect(() => {
     let interval: any = null;

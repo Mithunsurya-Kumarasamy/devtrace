@@ -53,6 +53,12 @@ public class RepositoryController {
         return ResponseEntity.accepted().body(syncJobService.triggerSync(id, force));
     }
 
+    @GetMapping("/{id}/sync-jobs")
+    @Operation(summary = "Get synchronization jobs history", description = "Retrieves all synchronization jobs for a repository ordered by start time descending.")
+    public ResponseEntity<List<com.devtrace.dto.SyncJobResponse>> getSyncJobs(@PathVariable String id) {
+        return ResponseEntity.ok(syncJobService.getSyncJobsForRepository(id));
+    }
+
     @GetMapping("/{id}/sync-jobs/{jobId}")
     @Operation(summary = "Get synchronization job status", description = "Retrieves real-time status, progress percentage, items processed, and diagnostics for an active or past sync job.")
     public ResponseEntity<com.devtrace.dto.SyncJobResponse> getSyncJob(

@@ -279,6 +279,26 @@ export interface RiskFactor {
   recommendation: string;
 }
 
+export interface PullRequestSummary {
+  id: string;
+  prNumber: number;
+  title: string;
+  state: string;
+  authorLogin: string;
+  additions: number;
+  deletions: number;
+  isMerged: boolean;
+  createdAt: string;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
 export interface PullRequestRiskAssessment {
   pullRequestId: string;
   prNumber: number;

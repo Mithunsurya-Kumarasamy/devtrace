@@ -104,7 +104,8 @@ public class AnomalyDetectionService {
         baselines.add(reviewTurnaroundBaseline);
         detectReviewTurnaroundAnomalies(repo, pullRequests, reviewTurnaroundBaseline, detectedEntities);
 
-        // Persist newly detected anomalies
+        // Refresh persisted anomalies for this repository
+        anomalyRepo.deleteByRepositoryId(repositoryId);
         if (!detectedEntities.isEmpty()) {
             anomalyRepo.saveAll(detectedEntities);
         }

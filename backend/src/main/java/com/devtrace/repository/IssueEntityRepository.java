@@ -16,5 +16,7 @@ public interface IssueEntityRepository extends JpaRepository<IssueEntity, String
     Page<IssueEntity> findByRepositoryIdOrderByCreatedAtDesc(String repositoryId, Pageable pageable);
     List<IssueEntity> findByRepositoryId(String repositoryId);
     List<IssueEntity> findByRepositoryIdAndCategory(String repositoryId, String category);
+    List<IssueEntity> findByRepositoryIdAndState(String repositoryId, String state);
+    long countByRepositoryIdAndState(String repositoryId, String state);
     long countByRepositoryId(String repositoryId);
 }

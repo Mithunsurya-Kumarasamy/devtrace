@@ -13,4 +13,5 @@ public interface AnomalyRecordEntityRepository extends JpaRepository<AnomalyReco
     List<AnomalyRecordEntity> findByRepositoryIdOrderByDetectionTimestampDesc(String repositoryId);
     Page<AnomalyRecordEntity> findByRepositoryIdOrderByDetectionTimestampDesc(String repositoryId, Pageable pageable);
     List<AnomalyRecordEntity> findByRepositoryIdAndMetricName(String repositoryId, String metricName);
+    void deleteByRepositoryId(String repositoryId);
 }

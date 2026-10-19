@@ -12,6 +12,8 @@ import {
   AnomalyDetectionReport,
   PullRequestRiskAssessment,
   DependencyGraphReport,
+  PullRequestSummary,
+  PageResponse,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -54,6 +56,11 @@ export const api = {
 
   getSyncJob: async (repoId: string, jobId: string): Promise<SyncJob> => {
     const response = await apiClient.get<SyncJob>(`/repositories/${repoId}/sync-jobs/${jobId}`);
+    return response.data;
+  },
+
+  getSyncJobs: async (repoId: string): Promise<SyncJob[]> => {
+    const response = await apiClient.get<SyncJob[]>(`/repositories/${repoId}/sync-jobs`);
     return response.data;
   },
 
@@ -101,6 +108,11 @@ export const api = {
   // PR Risk Guardrails
   getPrRisk: async (prId: string): Promise<PullRequestRiskAssessment> => {
     const response = await apiClient.get<PullRequestRiskAssessment>(`/pull-requests/${prId}/risk`);
+    return response.data;
+  },
+
+  getPullRequests: async (repoId: string, page: number = 0, size: number = 20): Promise<PageResponse<PullRequestSummary>> => {
+    const response = await apiClient.get<PageResponse<PullRequestSummary>>(`/repositories/${repoId}/pull-requests?page=${page}&size=${size}`);
     return response.data;
   },
 

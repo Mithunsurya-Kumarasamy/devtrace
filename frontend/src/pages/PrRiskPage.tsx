@@ -7,14 +7,53 @@ import {
   Zap
 } from 'lucide-react';
 import { api } from '../services/api';
-import { PullRequestRiskAssessment } from '../types';
+import { PullRequestRiskAssessment, PullRequestSummary } from '../types';
+import { useRepository } from '../context/RepositoryContext';
 
 export const PrRiskPage: React.FC = () => {
+  const { selectedRepoId } = useRepository();
   const [prIdInput, setPrIdInput] = useState<string>('');
   const [assessment, setAssessment] = useState<PullRequestRiskAssessment | null>(null);
+  const [repoPrs, setRepoPrs] = useState<PullRequestSummary[]>([]);
+  const [loadingPrs, setLoadingPrs] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [evaluating, setEvaluating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load repository PRs for quick selection
+  React.useEffect(() => {
+    if (!selectedRepoId) {
+      setRepoPrs([]);
+      return;
+    }
+    const loadPrs = async () => {
+      try {
+        setLoadingPrs(true);
+        const res = await api.getPullRequests(selectedRepoId, 0, 25);
+        setRepoPrs(res.content || []);
+      } catch (e) {
+        console.warn('Failed to load PRs for repository', e);
+      } finally {
+        setLoadingPrs(false);
+      }
+    };
+    loadPrs();
+  }, [selectedRepoId]);
+
+  const selectAndInspectPr = async (prId: string) => {
+    setPrIdInput(prId);
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await api.getPrRisk(prId);
+      setAssessment(data);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || 'Failed to fetch PR risk assessment');
+      setAssessment(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFetchRisk = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -107,6 +146,31 @@ export const PrRiskPage: React.FC = () => {
             <span>Re-evaluate</span>
           </button>
         </form>
+
+        {repoPrs.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-border">
+            <span className="text-xs text-slate-400 font-medium block mb-2">
+              Recent Pull Requests in this Repository: {loadingPrs && <span className="text-blue-400 font-normal ml-2">Loading...</span>}
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {repoPrs.map((pr) => (
+                <button
+                  key={pr.id}
+                  type="button"
+                  onClick={() => selectAndInspectPr(pr.id)}
+                  className={`text-xs px-2.5 py-1 rounded-md border transition flex items-center space-x-1.5 ${
+                    prIdInput === pr.id
+                      ? 'bg-blue-600/20 text-blue-300 border-blue-500/50'
+                      : 'bg-slate-900/60 text-slate-300 border-slate-800 hover:border-slate-700 hover:bg-slate-800'
+                  }`}
+                >
+                  <span className="font-mono text-blue-400">#{pr.prNumber}</span>
+                  <span className="max-w-[200px] truncate">{pr.title}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mt-4 p-3 rounded-lg bg-rose-950/30 border border-rose-900/50 text-xs text-rose-300">

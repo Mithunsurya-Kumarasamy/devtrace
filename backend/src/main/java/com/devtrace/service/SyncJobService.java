@@ -271,6 +271,16 @@ public class SyncJobService {
     }
 
     @Transactional(readOnly = true)
+    public List<SyncJobResponse> getSyncJobsForRepository(String repositoryId) {
+        if (!repositoryRepo.existsById(repositoryId)) {
+            throw new ResourceNotFoundException("Repository not found with ID: " + repositoryId);
+        }
+        return syncJobRepo.findByRepositoryIdOrderByStartedAtDesc(repositoryId).stream()
+                .map(SyncJobResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public SyncJobResponse getSyncJob(String repositoryId, String jobId) {
         SyncJobEntity job = syncJobRepo.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sync job with ID " + jobId + " not found"));
