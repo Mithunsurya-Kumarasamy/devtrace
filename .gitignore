@@ -81,3 +81,8 @@ ENV/
 backend/data/
 *.mv.db
 *.trace.db
+
+# PDF documents and report generators
+*.pdf
+*generate_pdf*
+
