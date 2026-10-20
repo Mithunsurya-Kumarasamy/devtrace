@@ -16,5 +16,6 @@ public interface PullRequestEntityRepository extends JpaRepository<PullRequestEn
     Page<PullRequestEntity> findByRepositoryIdOrderByCreatedAtDesc(String repositoryId, Pageable pageable);
     List<PullRequestEntity> findByRepositoryIdOrderByCreatedAtAsc(String repositoryId);
     List<PullRequestEntity> findByRepositoryIdAndState(String repositoryId, String state);
+    long countByRepositoryIdAndState(String repositoryId, String state);
     long countByRepositoryId(String repositoryId);
 }

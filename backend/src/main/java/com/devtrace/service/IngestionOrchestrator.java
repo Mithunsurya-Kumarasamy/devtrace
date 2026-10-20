@@ -94,6 +94,7 @@ public class IngestionOrchestrator {
 
         // Process files if present
         if (dto.getFiles() != null) {
+            commitFileRepo.deleteByCommitId(savedCommit.getId());
             for (GitHubCommitDto.CommitFileInfo f : dto.getFiles()) {
                 CommitFileEntity fileEntity = new CommitFileEntity(
                         savedCommit,
@@ -144,6 +145,7 @@ public class IngestionOrchestrator {
         if (dto.getMergedAt() != null) pr.setMergedAt(Instant.parse(dto.getMergedAt()));
 
         // Process reviews and calculate review lifecycle timestamps
+        pr.getReviews().clear();
         if (reviews != null && !reviews.isEmpty()) {
             Instant firstReview = null;
             Instant approval = null;

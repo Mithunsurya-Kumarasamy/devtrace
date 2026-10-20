@@ -59,7 +59,7 @@ public class CoreAnalyticsService {
         // Raw counts
         overview.setTotalCommits(commitRepo.countByRepositoryId(repositoryId));
         overview.setTotalPullRequests(pullRequestRepo.countByRepositoryId(repositoryId));
-        overview.setOpenPullRequests(pullRequestRepo.findByRepositoryIdAndState(repositoryId, "open").size());
+        overview.setOpenPullRequests((int) pullRequestRepo.countByRepositoryIdAndState(repositoryId, "open"));
         overview.setTotalIssues(issueRepo.countByRepositoryId(repositoryId));
         overview.setOpenIssues((int) issueRepo.countByRepositoryIdAndState(repositoryId, "open"));
         overview.setTotalReleases(releaseRepo.countByRepositoryId(repositoryId));

@@ -22,14 +22,18 @@ public class HotspotFileDto {
     public HotspotFileDto() {}
 
     public String getFilename() { return filename; }
+    public String getFilePath() { return filename; }
     public void setFilename(String filename) { this.filename = filename; }
     public String getDirectory() { return directory; }
     public void setDirectory(String directory) { this.directory = directory; }
     public double getHotspotScore() { return hotspotScore; }
+    public double getCompositeScore() { return hotspotScore; }
     public void setHotspotScore(double hotspotScore) { this.hotspotScore = hotspotScore; }
     public String getRiskLevel() { return riskLevel; }
+    public String getRiskTier() { return riskLevel; }
     public void setRiskLevel(String riskLevel) { this.riskLevel = riskLevel; }
     public long getModificationCount() { return modificationCount; }
+    public long getCommitCount() { return modificationCount; }
     public void setModificationCount(long modificationCount) { this.modificationCount = modificationCount; }
     public long getAdditions() { return additions; }
     public void setAdditions(long additions) { this.additions = additions; }
@@ -38,16 +42,19 @@ public class HotspotFileDto {
     public long getTotalChurn() { return totalChurn; }
     public void setTotalChurn(long totalChurn) { this.totalChurn = totalChurn; }
     public int getDefectCommitCount() { return defectCommitCount; }
+    public int getBugFixCount() { return defectCommitCount; }
     public void setDefectCommitCount(int defectCommitCount) { this.defectCommitCount = defectCommitCount; }
     public double getDefectRatio() { return defectRatio; }
     public void setDefectRatio(double defectRatio) { this.defectRatio = defectRatio; }
     public double getRecencyWeightedScore() { return recencyWeightedScore; }
+    public double getRecencyWeight() { return recencyWeightedScore; }
     public void setRecencyWeightedScore(double recencyWeightedScore) { this.recencyWeightedScore = recencyWeightedScore; }
     public String getPrimaryContributor() { return primaryContributor; }
     public void setPrimaryContributor(String primaryContributor) { this.primaryContributor = primaryContributor; }
     public int getDistinctAuthorsCount() { return distinctAuthorsCount; }
     public void setDistinctAuthorsCount(int distinctAuthorsCount) { this.distinctAuthorsCount = distinctAuthorsCount; }
     public String getExplanation() { return explanation; }
+    public String getRecommendedAction() { return explanation; }
     public void setExplanation(String explanation) { this.explanation = explanation; }
     public Instant getLastModifiedAt() { return lastModifiedAt; }
     public void setLastModifiedAt(Instant lastModifiedAt) { this.lastModifiedAt = lastModifiedAt; }

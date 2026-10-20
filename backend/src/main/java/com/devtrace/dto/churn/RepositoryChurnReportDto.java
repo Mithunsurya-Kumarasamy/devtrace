@@ -30,10 +30,12 @@ public class RepositoryChurnReportDto {
     public long getTotalChanges() { return totalChanges; }
     public void setTotalChanges(long totalChanges) { this.totalChanges = totalChanges; }
     public long getNetCodeGrowth() { return netCodeGrowth; }
+    public long getNetLinesChanged() { return netCodeGrowth; }
     public void setNetCodeGrowth(long netCodeGrowth) { this.netCodeGrowth = netCodeGrowth; }
     public double getDailyAverageChurn() { return dailyAverageChurn; }
     public void setDailyAverageChurn(double dailyAverageChurn) { this.dailyAverageChurn = dailyAverageChurn; }
     public List<FileChurnDto> getTopModifiedFiles() { return topModifiedFiles; }
+    public List<FileChurnDto> getTopChurnedFiles() { return topModifiedFiles; }
     public void setTopModifiedFiles(List<FileChurnDto> topModifiedFiles) { this.topModifiedFiles = topModifiedFiles; }
     public List<DirectoryChurnDto> getDirectoryChurn() { return directoryChurn; }
     public void setDirectoryChurn(List<DirectoryChurnDto> directoryChurn) { this.directoryChurn = directoryChurn; }

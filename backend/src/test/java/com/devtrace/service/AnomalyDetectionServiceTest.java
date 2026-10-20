@@ -129,6 +129,9 @@ class AnomalyDetectionServiceTest {
 
         AnomalyDetectionReportDto report = anomalyDetectionService.detectAndReportAnomalies(repoId, 30);
 
+        // Verify previous anomalies were deleted to prevent runaway duplication (BUG-02)
+        verify(anomalyRepo).deleteByRepositoryId(repoId);
+
         // Verify saveAll was called with detected anomalies
         ArgumentCaptor<List<AnomalyRecordEntity>> captor = ArgumentCaptor.forClass(List.class);
         verify(anomalyRepo).saveAll(captor.capture());

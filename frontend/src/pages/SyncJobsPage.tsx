@@ -155,10 +155,10 @@ export const SyncJobsPage: React.FC = () => {
                 {currentJob?.status || selectedRepo.syncStatus || 'IDLE'}
               </span>
             </div>
-            {currentJob?.processedItems !== undefined && (
+            {(currentJob?.itemsProcessed !== undefined || currentJob?.processedItems !== undefined) && (
               <div>
                 <span className="text-slate-400">Items Processed:</span>{' '}
-                <span className="text-white font-bold">{currentJob.processedItems}</span>
+                <span className="text-white font-bold">{currentJob?.itemsProcessed ?? currentJob?.processedItems}</span>
               </div>
             )}
           </div>

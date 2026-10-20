@@ -23,16 +23,21 @@ public class KnowledgeSiloDto {
     }
 
     public String getPath() { return path; }
+    public String getFilePath() { return path; }
     public void setPath(String path) { this.path = path; }
     public String getSiloType() { return siloType; }
     public void setSiloType(String siloType) { this.siloType = siloType; }
     public String getSoleContributor() { return soleContributor; }
+    public String getPrimaryAuthor() { return soleContributor; }
+    public double getAuthorCommitPercentage() { return 1.0; }
     public void setSoleContributor(String soleContributor) { this.soleContributor = soleContributor; }
     public long getCommitCount() { return commitCount; }
+    public long getTotalCommits() { return commitCount; }
     public void setCommitCount(long commitCount) { this.commitCount = commitCount; }
     public long getTotalChanges() { return totalChanges; }
     public void setTotalChanges(long totalChanges) { this.totalChanges = totalChanges; }
     public String getRiskSeverity() { return riskSeverity; }
+    public String getRiskLevel() { return riskSeverity; }
     public void setRiskSeverity(String riskSeverity) { this.riskSeverity = riskSeverity; }
     public String getRecommendation() { return recommendation; }
     public void setRecommendation(String recommendation) { this.recommendation = recommendation; }

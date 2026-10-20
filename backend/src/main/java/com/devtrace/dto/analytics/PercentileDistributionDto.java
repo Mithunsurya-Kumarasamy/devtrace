@@ -23,6 +23,8 @@ public class PercentileDistributionDto {
     public void setMin(double min) { this.min = min; }
     public double getP50() { return p50; }
     public void setP50(double p50) { this.p50 = p50; }
+    public double getMedian() { return p50; }
+    public void setMedian(double median) { this.p50 = median; }
     public double getP75() { return p75; }
     public void setP75(double p75) { this.p75 = p75; }
     public double getP90() { return p90; }

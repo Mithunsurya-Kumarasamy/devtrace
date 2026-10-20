@@ -93,7 +93,7 @@ export const AnalyticsPage: React.FC = () => {
             <div className="p-4 bg-slate-900/80 rounded-xl border border-border">
               <span className="text-xs text-slate-400 uppercase font-mono">Median (P50)</span>
               <div className="text-3xl font-extrabold text-blue-400 font-mono mt-1">
-                {overview?.prCycleTimeHours?.median?.toFixed(1) ?? '14.2'}h
+                {overview?.prCycleTimeHours?.median?.toFixed(1) ?? overview?.prCycleTimeHours?.p50?.toFixed(1) ?? '14.2'}h
               </div>
               <span className="text-[11px] text-slate-500 mt-1 block">50% completed within</span>
             </div>
@@ -133,7 +133,7 @@ export const AnalyticsPage: React.FC = () => {
             <div className="p-4 bg-slate-900/80 rounded-xl border border-border">
               <span className="text-xs text-slate-400 uppercase font-mono">Median (P50)</span>
               <div className="text-3xl font-extrabold text-amber-400 font-mono mt-1">
-                {overview?.reviewWaitingTimeHours?.median?.toFixed(1) ?? '6.4'}h
+                {overview?.reviewWaitingTimeHours?.median?.toFixed(1) ?? overview?.reviewWaitingTimeHours?.p50?.toFixed(1) ?? '6.4'}h
               </div>
               <span className="text-[11px] text-slate-500 mt-1 block">Standard turnaround wait</span>
             </div>

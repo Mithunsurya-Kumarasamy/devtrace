@@ -11,6 +11,7 @@ import java.util.List;
 @Repository
 public interface CommitFileEntityRepository extends JpaRepository<CommitFileEntity, String> {
     List<CommitFileEntity> findByCommitId(String commitId);
+    void deleteByCommitId(String commitId);
     List<CommitFileEntity> findByCommitRepositoryId(String repositoryId);
 
     @Query("SELECT cf.filename, COUNT(cf), SUM(cf.additions), SUM(cf.deletions) " +

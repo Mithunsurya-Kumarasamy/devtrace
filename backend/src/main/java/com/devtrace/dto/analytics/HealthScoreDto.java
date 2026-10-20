@@ -21,6 +21,7 @@ public class HealthScoreDto {
     }
 
     public double getCompositeScore() { return compositeScore; }
+    public double getComposite() { return compositeScore; }
     public void setCompositeScore(double compositeScore) { this.compositeScore = compositeScore; }
     public double getCodeStability() { return codeStability; }
     public void setCodeStability(double codeStability) { this.codeStability = codeStability; }

@@ -226,11 +226,13 @@ public class DependencyGraphService {
     private String extractModuleName(String filename) {
         if (filename == null || filename.isBlank()) return "root";
 
+        String normalized = filename.replace('\\', '/');
+
         // Java: backend/src/main/java/com/devtrace/...
-        if (filename.endsWith(".java")) {
-            int javaIdx = filename.indexOf("src/main/java/");
+        if (normalized.endsWith(".java")) {
+            int javaIdx = normalized.indexOf("src/main/java/");
             if (javaIdx != -1) {
-                String sub = filename.substring(javaIdx + "src/main/java/".length());
+                String sub = normalized.substring(javaIdx + "src/main/java/".length());
                 int lastSlash = sub.lastIndexOf('/');
                 if (lastSlash != -1) {
                     return sub.substring(0, lastSlash).replace('/', '.');
@@ -239,19 +241,16 @@ public class DependencyGraphService {
         }
 
         // Generic directory extraction
-        int lastSlash = filename.lastIndexOf('/');
-        if (lastSlash == -1) {
-            lastSlash = filename.lastIndexOf('\\');
-        }
+        int lastSlash = normalized.lastIndexOf('/');
         if (lastSlash > 0) {
-            return filename.substring(0, lastSlash);
+            return normalized.substring(0, lastSlash);
         }
         return "root";
     }
 
     private String detectModuleType(String filename) {
         if (filename == null) return "MODULE";
-        String lower = filename.toLowerCase();
+        String lower = filename.replace('\\', '/').toLowerCase();
         if (lower.endsWith(".java")) return "JAVA";
         if (lower.endsWith(".ts") || lower.endsWith(".tsx")) return "TYPESCRIPT";
         if (lower.endsWith(".js") || lower.endsWith(".jsx")) return "JAVASCRIPT";
@@ -261,9 +260,11 @@ public class DependencyGraphService {
 
     private Set<String> parseImports(String rawPatch, String filename) {
         Set<String> imports = new HashSet<>();
-        if (rawPatch == null || rawPatch.isBlank()) return imports;
+        if (rawPatch == null || rawPatch.isBlank() || filename == null) return imports;
 
-        if (filename.endsWith(".java")) {
+        String normalized = filename.replace('\\', '/').toLowerCase();
+
+        if (normalized.endsWith(".java")) {
             Matcher matcher = JAVA_IMPORT.matcher(rawPatch);
             while (matcher.find()) {
                 String fullImport = matcher.group(1);
@@ -277,7 +278,7 @@ public class DependencyGraphService {
                     }
                 }
             }
-        } else if (filename.endsWith(".ts") || filename.endsWith(".tsx") || filename.endsWith(".js") || filename.endsWith(".jsx")) {
+        } else if (normalized.endsWith(".ts") || normalized.endsWith(".tsx") || normalized.endsWith(".js") || normalized.endsWith(".jsx")) {
             Matcher matcher = JS_IMPORT.matcher(rawPatch);
             while (matcher.find()) {
                 String imp = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
@@ -285,7 +286,7 @@ public class DependencyGraphService {
                     imports.add(cleanJsPath(imp, filename));
                 }
             }
-        } else if (filename.endsWith(".py")) {
+        } else if (normalized.endsWith(".py")) {
             Matcher matcher = PY_IMPORT.matcher(rawPatch);
             while (matcher.find()) {
                 String imp = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);

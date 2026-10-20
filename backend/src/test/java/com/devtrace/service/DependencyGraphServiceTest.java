@@ -128,4 +128,23 @@ class DependencyGraphServiceTest {
 
         assertThat(report.getArchitecturalSummary()).contains("HIGH_BLAST_RADIUS");
     }
+
+    @Test
+    @DisplayName("analyzeDependencyGraph normalizes Windows backslash file paths correctly")
+    void testWindowsPathSeparatorsNormalized() {
+        when(repositoryRepo.existsById(repoId)).thenReturn(true);
+
+        CommitEntity commit = new CommitEntity(testRepo, "shaWin", "feat: windows path support", Instant.now());
+        CommitFileEntity winFile = new CommitFileEntity(commit,
+                "backend\\src\\main\\java\\com\\devtrace\\service\\WindowsService.java", "modified", 100, 10, 110);
+        winFile.setRawPatch("+package com.devtrace.service;\n+import com.devtrace.repository.WindowsRepo;\n+public class WindowsService {}");
+
+        when(commitFileRepo.findByCommitRepositoryId(repoId)).thenReturn(List.of(winFile));
+
+        DependencyGraphReportDto report = dependencyGraphService.analyzeDependencyGraph(repoId);
+
+        assertThat(report.getTotalModules()).isGreaterThanOrEqualTo(1);
+        List<String> moduleNames = report.getNodes().stream().map(DependencyNodeDto::getName).toList();
+        assertThat(moduleNames).contains("com.devtrace.service");
+    }
 }

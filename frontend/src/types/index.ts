@@ -30,8 +30,10 @@ export interface SyncJob {
   status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
   progressPercentage: number;
   currentStep: string;
-  processedItems: number;
-  totalEstimatedItems: number;
+  itemsProcessed?: number;
+  processedItems?: number;
+  totalItemsEstimated?: number;
+  totalEstimatedItems?: number;
   errorMessage?: string;
   startedAt: string;
   completedAt?: string;
@@ -46,20 +48,31 @@ export interface RepositoryOverview {
   totalReleases: number;
   activeContributors: number;
   prCycleTimeHours: {
-    median: number;
+    min?: number;
+    p50?: number;
+    median?: number;
     p75: number;
     p90: number;
+    max?: number;
+    average?: number;
   };
   reviewWaitingTimeHours: {
-    median: number;
+    min?: number;
+    p50?: number;
+    median?: number;
     p75: number;
+    p90?: number;
+    max?: number;
+    average?: number;
   };
   healthScore: {
-    composite: number;
+    compositeScore?: number;
+    composite?: number;
     codeStability: number;
     reviewEfficiency: number;
     releaseCadence: number;
     collaborationResilience: number;
+    calculationExplanation?: string;
   };
 }
 

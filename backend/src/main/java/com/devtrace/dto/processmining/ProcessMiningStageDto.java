@@ -30,8 +30,10 @@ public class ProcessMiningStageDto {
     }
 
     public String getStageKey() { return stageKey; }
+    public String getStage() { return stageKey; }
     public void setStageKey(String stageKey) { this.stageKey = stageKey; }
     public String getStageName() { return stageName; }
+    public String getDisplayName() { return stageName; }
     public void setStageName(String stageName) { this.stageName = stageName; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
@@ -46,6 +48,7 @@ public class ProcessMiningStageDto {
     public double getPercentageOfTotalCycle() { return percentageOfTotalCycle; }
     public void setPercentageOfTotalCycle(double percentageOfTotalCycle) { this.percentageOfTotalCycle = percentageOfTotalCycle; }
     public int getSampleCount() { return sampleCount; }
+    public int getTransitionCount() { return sampleCount; }
     public void setSampleCount(int sampleCount) { this.sampleCount = sampleCount; }
     public boolean isBottleneck() { return isBottleneck; }
     public void setBottleneck(boolean bottleneck) { isBottleneck = bottleneck; }

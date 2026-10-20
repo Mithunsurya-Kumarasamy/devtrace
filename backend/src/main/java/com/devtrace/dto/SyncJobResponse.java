@@ -43,8 +43,10 @@ public class SyncJobResponse {
     public int getProgressPercentage() { return progressPercentage; }
     public void setProgressPercentage(int progressPercentage) { this.progressPercentage = progressPercentage; }
     public int getItemsProcessed() { return itemsProcessed; }
+    public int getProcessedItems() { return itemsProcessed; }
     public void setItemsProcessed(int itemsProcessed) { this.itemsProcessed = itemsProcessed; }
     public int getTotalItemsEstimated() { return totalItemsEstimated; }
+    public int getTotalEstimatedItems() { return totalItemsEstimated; }
     public void setTotalItemsEstimated(int totalItemsEstimated) { this.totalItemsEstimated = totalItemsEstimated; }
     public String getErrorMessage() { return errorMessage; }
     public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }

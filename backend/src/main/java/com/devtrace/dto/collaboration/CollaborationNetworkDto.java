@@ -22,8 +22,10 @@ public class CollaborationNetworkDto {
     public int getTotalContributors() { return totalContributors; }
     public void setTotalContributors(int totalContributors) { this.totalContributors = totalContributors; }
     public int getTotalInteractions() { return totalInteractions; }
+    public int getTotalEdges() { return totalInteractions; }
     public void setTotalInteractions(int totalInteractions) { this.totalInteractions = totalInteractions; }
     public double getNetworkDensity() { return networkDensity; }
+    public double getGraphDensity() { return networkDensity; }
     public void setNetworkDensity(double networkDensity) { this.networkDensity = networkDensity; }
     public double getModularityScore() { return modularityScore; }
     public void setModularityScore(double modularityScore) { this.modularityScore = modularityScore; }

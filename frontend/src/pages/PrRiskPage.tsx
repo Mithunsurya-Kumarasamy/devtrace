@@ -57,12 +57,23 @@ export const PrRiskPage: React.FC = () => {
 
   const handleFetchRisk = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!prIdInput.trim()) return;
+    const query = prIdInput.trim();
+    if (!query) return;
+
+    let targetId = query;
+    // Check if user entered a PR number like "1" or "#1"
+    const numMatch = query.replace(/^#/, '');
+    if (/^\d+$/.test(numMatch)) {
+      const found = repoPrs.find(p => p.prNumber === parseInt(numMatch, 10));
+      if (found) {
+        targetId = found.id;
+      }
+    }
 
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getPrRisk(prIdInput.trim());
+      const data = await api.getPrRisk(targetId);
       setAssessment(data);
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Failed to fetch PR risk assessment');
@@ -73,11 +84,22 @@ export const PrRiskPage: React.FC = () => {
   };
 
   const handleForceEvaluate = async () => {
-    if (!prIdInput.trim()) return;
+    const query = prIdInput.trim();
+    if (!query) return;
+
+    let targetId = query;
+    const numMatch = query.replace(/^#/, '');
+    if (/^\d+$/.test(numMatch)) {
+      const found = repoPrs.find(p => p.prNumber === parseInt(numMatch, 10));
+      if (found) {
+        targetId = found.id;
+      }
+    }
+
     try {
       setEvaluating(true);
       setError(null);
-      const data = await api.evaluatePrRisk(prIdInput.trim());
+      const data = await api.evaluatePrRisk(targetId);
       setAssessment(data);
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || 'Failed to force evaluate PR risk');
@@ -118,6 +140,30 @@ export const PrRiskPage: React.FC = () => {
 
       {/* PR Search and Evaluation Input */}
       <div className="dev-card p-6">
+        {repoPrs.length > 0 && (
+          <div className="mb-4">
+            <label className="text-xs text-slate-400 font-medium block mb-1.5">
+              Select Pull Request from Dropdown: {loadingPrs && <span className="text-blue-400 font-normal ml-2">Loading...</span>}
+            </label>
+            <select
+              value={prIdInput}
+              onChange={(e) => {
+                if (e.target.value) {
+                  selectAndInspectPr(e.target.value);
+                }
+              }}
+              className="w-full bg-slate-900 border border-border rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-blue-500 transition font-mono"
+            >
+              <option value="">-- Choose a Pull Request from this repository --</option>
+              {repoPrs.map((pr) => (
+                <option key={pr.id} value={pr.id}>
+                  #{pr.prNumber} - {pr.title} ({pr.state}) by @{pr.authorLogin}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <form onSubmit={handleFetchRisk} className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
@@ -125,7 +171,7 @@ export const PrRiskPage: React.FC = () => {
               type="text"
               value={prIdInput}
               onChange={(e) => setPrIdInput(e.target.value)}
-              placeholder="Enter Pull Request ID (UUID) or evaluate sample..."
+              placeholder="Enter Pull Request ID (UUID), PR # (e.g. 1 or #1), or select above..."
               className="w-full bg-slate-900 border border-border rounded-lg pl-9 pr-4 py-2 text-sm text-slate-200 outline-none focus:border-blue-500 transition"
             />
           </div>

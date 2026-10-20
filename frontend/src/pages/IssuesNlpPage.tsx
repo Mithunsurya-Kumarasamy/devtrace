@@ -102,7 +102,9 @@ export const IssuesNlpPage: React.FC = () => {
         <div className="dev-card p-4">
           <span className="text-xs text-slate-400 uppercase font-mono">Model Agreement Rate</span>
           <div className="text-2xl font-bold text-emerald-400 font-mono mt-1">
-            {report?.evaluation?.agreementRate ? `${(report.evaluation.agreementRate * 100).toFixed(1)}%` : 'N/A'}
+            {report?.evaluation?.agreementRate !== undefined && report?.evaluation?.agreementRate !== null
+              ? `${(report.evaluation.agreementRate > 1.0 ? report.evaluation.agreementRate : report.evaluation.agreementRate * 100).toFixed(1)}%`
+              : 'N/A'}
           </div>
           <span className="text-xs text-slate-500 mt-1 block">Supervision consistency</span>
         </div>

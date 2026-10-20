@@ -239,4 +239,40 @@ class SyncJobServiceTest {
         RepositoryEntity updatedRepo = repositoryRepo.findById(testRepo.getId()).orElseThrow();
         assertEquals("FAILED", updatedRepo.getSyncStatus());
     }
+
+    @Test
+    @DisplayName("Should retrieve sync jobs history ordered by startedAt descending (BUG-04)")
+    void testListSyncJobsHistory() {
+        SyncJobEntity job1 = new SyncJobEntity(testRepo);
+        job1.setStatus("COMPLETED");
+        job1.setStartedAt(Instant.now().minusSeconds(100));
+        syncJobRepo.save(job1);
+
+        SyncJobEntity job2 = new SyncJobEntity(testRepo);
+        job2.setStatus("RUNNING");
+        job2.setStartedAt(Instant.now());
+        syncJobRepo.save(job2);
+
+        List<SyncJobResponse> jobs = syncJobService.getSyncJobsForRepository(testRepo.getId());
+
+        assertEquals(2, jobs.size());
+        assertEquals(job2.getId(), jobs.get(0).getJobId());
+        assertEquals(job1.getId(), jobs.get(1).getJobId());
+    }
+
+    @Test
+    @DisplayName("Should provide processedItems and totalEstimatedItems aliases (BUG-06)")
+    void testSyncJobResponseAliases() {
+        SyncJobEntity job = new SyncJobEntity(testRepo);
+        job.setItemsProcessed(42);
+        job.setTotalItemsEstimated(100);
+        syncJobRepo.save(job);
+
+        SyncJobResponse res = syncJobService.getSyncJob(testRepo.getId(), job.getId());
+
+        assertEquals(42, res.getItemsProcessed());
+        assertEquals(42, res.getProcessedItems());
+        assertEquals(100, res.getTotalItemsEstimated());
+        assertEquals(100, res.getTotalEstimatedItems());
+    }
 }

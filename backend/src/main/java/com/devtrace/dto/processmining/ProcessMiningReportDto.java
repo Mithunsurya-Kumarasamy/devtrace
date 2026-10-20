@@ -43,4 +43,26 @@ public class ProcessMiningReportDto {
     public void setRecentTraces(List<PullRequestLifecycleTraceDto> recentTraces) { this.recentTraces = recentTraces; }
     public List<String> getMissingDataLimitations() { return missingDataLimitations; }
     public void setMissingDataLimitations(List<String> missingDataLimitations) { this.missingDataLimitations = missingDataLimitations; }
+
+    public List<BottleneckAnalysisDto> getBottlenecks() {
+        if (bottleneck != null && !"NONE".equalsIgnoreCase(bottleneck.getStageKey())) {
+            return List.of(bottleneck);
+        }
+        return java.util.Collections.emptyList();
+    }
+
+    public List<String> getLimitations() {
+        return missingDataLimitations;
+    }
+
+    public int getFastTrackPrs() {
+        if (variants != null) {
+            for (ProcessVariantDto v : variants) {
+                if ("FAST_TRACK".equalsIgnoreCase(v.getVariantKey())) {
+                    return v.getCount();
+                }
+            }
+        }
+        return 0;
+    }
 }

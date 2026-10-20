@@ -146,11 +146,11 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
                 </div>
                 <div className="mt-4 flex items-baseline space-x-3">
                   <span className="text-5xl font-extrabold text-white font-mono">
-                    {overview?.healthScore?.composite ?? 85}
+                    {overview?.healthScore?.composite ?? overview?.healthScore?.compositeScore ?? 85}
                   </span>
                   <span className="text-sm text-slate-400">/ 100</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold border ${getHealthBadgeColor(overview?.healthScore?.composite ?? 85)}`}>
-                    {(overview?.healthScore?.composite ?? 85) >= 75 ? 'Healthy Pipeline' : 'Friction Detected'}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold border ${getHealthBadgeColor(overview?.healthScore?.composite ?? overview?.healthScore?.compositeScore ?? 85)}`}>
+                    {(overview?.healthScore?.composite ?? overview?.healthScore?.compositeScore ?? 85) >= 75 ? 'Healthy Pipeline' : 'Friction Detected'}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-2">
@@ -288,7 +288,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
                   <div className="p-3 bg-surface rounded-lg border border-border">
                     <span className="text-xs text-slate-400 block">Cycle Time (Median)</span>
                     <span className="text-xl font-bold text-white font-mono mt-1 block">
-                      {overview?.prCycleTimeHours?.median?.toFixed(1) ?? '14.2'}h
+                      {overview?.prCycleTimeHours?.median?.toFixed(1) ?? overview?.prCycleTimeHours?.p50?.toFixed(1) ?? '14.2'}h
                     </span>
                   </div>
                   <div className="p-3 bg-surface rounded-lg border border-border">
@@ -300,7 +300,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
                   <div className="p-3 bg-surface rounded-lg border border-border">
                     <span className="text-xs text-slate-400 block">Review Wait (Median)</span>
                     <span className="text-xl font-bold text-amber-400 font-mono mt-1 block">
-                      {overview?.reviewWaitingTimeHours?.median?.toFixed(1) ?? '6.4'}h
+                      {overview?.reviewWaitingTimeHours?.median?.toFixed(1) ?? overview?.reviewWaitingTimeHours?.p50?.toFixed(1) ?? '6.4'}h
                     </span>
                   </div>
                   <div className="p-3 bg-surface rounded-lg border border-border">

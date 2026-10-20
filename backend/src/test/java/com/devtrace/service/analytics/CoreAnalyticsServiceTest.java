@@ -145,4 +145,52 @@ class CoreAnalyticsServiceTest {
         assertEquals(75.0, overview.getHealthScore().getCollaborationResilience());
         assertNotNull(overview.getHealthScore().getCalculationExplanation());
     }
+
+    @Test
+    @DisplayName("Should query state instead of category for open issues count (BUG-01)")
+    void testOpenIssuesCountMatchesState() {
+        IssueEntity openIssue1 = new IssueEntity(testRepo, 10, "Open bug", "open", "user1");
+        openIssue1.setCategory("BUG_DEFECT");
+
+        IssueEntity openIssue2 = new IssueEntity(testRepo, 11, "Open task", "open", "user2");
+        openIssue2.setCategory("FEATURE");
+
+        IssueEntity closedIssue = new IssueEntity(testRepo, 12, "Closed issue", "closed", "user3");
+        closedIssue.setCategory("BUG");
+
+        issueRepo.saveAll(List.of(openIssue1, openIssue2, closedIssue));
+
+        RepositoryOverviewDto overview = analyticsService.getRepositoryOverview(testRepo.getId(), 30);
+
+        assertEquals(3, overview.getTotalIssues());
+        assertEquals(2, overview.getOpenIssues());
+    }
+
+    @Test
+    @DisplayName("Should recognize NLP BUG_DEFECT in Code Stability calculation (BUG-03)")
+    void testNlpBugDefectIncludedInCodeStability() {
+        // 2 issues: 1 NLP categorized BUG_DEFECT, 1 FEATURE
+        IssueEntity nlpBug = new IssueEntity(testRepo, 20, "Memory leak detected", "closed", "user1");
+        nlpBug.setCategory("BUG_DEFECT");
+
+        IssueEntity feat = new IssueEntity(testRepo, 21, "Add dark theme", "open", "user2");
+        feat.setCategory("FEATURE");
+
+        issueRepo.saveAll(List.of(nlpBug, feat));
+
+        RepositoryOverviewDto overview = analyticsService.getRepositoryOverview(testRepo.getId(), 30);
+
+        // bugCount = 1, issues.size() = 2, bugRatio = 0.5. Code stability = 100 - (0.5 * 60) = 70.0
+        assertEquals(70.0, overview.getHealthScore().getCodeStability());
+    }
+
+    @Test
+    @DisplayName("Should support alias getters on DTOs for frontend compatibility (BUG-08, BUG-09)")
+    void testDtoAliases() {
+        RepositoryOverviewDto overview = analyticsService.getRepositoryOverview(testRepo.getId(), 30);
+
+        assertEquals(overview.getHealthScore().getCompositeScore(), overview.getHealthScore().getComposite());
+        assertEquals(overview.getPrCycleTimeHours().getP50(), overview.getPrCycleTimeHours().getMedian());
+        assertEquals(overview.getReviewWaitingTimeHours().getP50(), overview.getReviewWaitingTimeHours().getMedian());
+    }
 }

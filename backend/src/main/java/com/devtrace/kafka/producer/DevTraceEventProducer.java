@@ -18,11 +18,17 @@ public class DevTraceEventProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendSyncTrigger(SyncTriggerEvent event) {
+    public boolean isKafkaAvailable() {
+        return kafkaTemplate != null;
+    }
+
+    public boolean sendSyncTrigger(SyncTriggerEvent event) {
         log.info("Emitting sync trigger: repoId={}, jobId={}", event.getRepositoryId(), event.getJobId());
         if (kafkaTemplate != null) {
             kafkaTemplate.send(KafkaTopicConfig.TOPIC_SYNC_REQUESTS, event.getRepositoryId(), event);
+            return true;
         }
+        return false;
     }
 
     public void sendRawCommit(RawCommitEvent event) {

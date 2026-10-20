@@ -31,6 +31,9 @@ public class SyncJobService {
     private final IngestionOrchestrator ingestionOrchestrator;
     private final DevTraceEventProducer eventProducer;
 
+    @org.springframework.beans.factory.annotation.Value("${spring.kafka.listener.auto-startup:true}")
+    private boolean kafkaListenerAutoStartup = true;
+
     public SyncJobService(
             RepositoryEntityRepository repositoryRepo,
             SyncJobEntityRepository syncJobRepo,
@@ -58,21 +61,26 @@ public class SyncJobService {
         repository.setSyncStatus("PENDING");
         repositoryRepo.save(repository);
 
-        // Emit Kafka trigger event
+        // Emit Kafka trigger event if Kafka is enabled and listener is active
+        boolean kafkaDispatched = false;
         try {
-            eventProducer.sendSyncTrigger(new SyncTriggerEvent(
-                    job.getId(),
-                    repository.getId(),
-                    repository.getOwner(),
-                    repository.getName(),
-                    forceFullSync
-            ));
+            if (kafkaListenerAutoStartup && eventProducer != null && eventProducer.isKafkaAvailable()) {
+                kafkaDispatched = eventProducer.sendSyncTrigger(new SyncTriggerEvent(
+                        job.getId(),
+                        repository.getId(),
+                        repository.getOwner(),
+                        repository.getName(),
+                        forceFullSync
+                ));
+            }
         } catch (Exception e) {
             log.warn("Kafka producer unavailable or standalone execution. Proceeding with in-process worker: {}", e.getMessage());
         }
 
-        // Kick off async execution
-        executeSyncAsync(job.getId(), repository.getId(), forceFullSync);
+        // Kick off async execution only if not dispatched to Kafka consumer
+        if (!kafkaDispatched) {
+            executeSyncAsync(job.getId(), repository.getId(), forceFullSync);
+        }
 
         return SyncJobResponse.fromEntity(job);
     }
