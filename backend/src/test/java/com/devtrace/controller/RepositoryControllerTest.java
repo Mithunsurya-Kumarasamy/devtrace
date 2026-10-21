@@ -92,4 +92,67 @@ class RepositoryControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
     }
+
+    @Test
+    @DisplayName("POST /api/repositories with full GitHub URL and branch registers repository")
+    void testRegisterRepositoryWithUrlAndBranch() throws Exception {
+        GitHubRepoDto gitHubDto = new GitHubRepoDto();
+        gitHubDto.setId(112233L);
+        gitHubDto.setName("react");
+        gitHubDto.setFullName("facebook/react");
+        gitHubDto.setDescription("The library for web and native user interfaces");
+        gitHubDto.setDefaultBranch("main");
+        gitHubDto.setPrivate(false);
+        gitHubDto.setHtmlUrl("https://github.com/facebook/react");
+
+        when(gitHubApiClient.fetchRepository(eq("facebook"), eq("react")))
+                .thenReturn(gitHubDto);
+
+        RepositoryRegistrationRequest request = new RepositoryRegistrationRequest("https://github.com/facebook/react/tree/v18.2.0");
+
+        mockMvc.perform(post("/api/repositories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("react"))
+                .andExpect(jsonPath("$.fullName").value("facebook/react"))
+                .andExpect(jsonPath("$.defaultBranch").value("v18.2.0"));
+    }
+
+    @Test
+    @DisplayName("GET /api/repositories/{id}/branches and PATCH /api/repositories/{id}/branch")
+    void testBranchesLifecycle() throws Exception {
+        GitHubRepoDto gitHubDto = new GitHubRepoDto();
+        gitHubDto.setId(554433L);
+        gitHubDto.setName("devtrace");
+        gitHubDto.setFullName("Mithunsurya-Kumarasamy/devtrace");
+        gitHubDto.setDefaultBranch("master");
+
+        when(gitHubApiClient.fetchRepository(eq("Mithunsurya-Kumarasamy"), eq("devtrace")))
+                .thenReturn(gitHubDto);
+        when(gitHubApiClient.fetchBranches(eq("Mithunsurya-Kumarasamy"), eq("devtrace")))
+                .thenReturn(java.util.List.of(new com.devtrace.dto.GitHubBranchDto("master"), new com.devtrace.dto.GitHubBranchDto("Miskyy")));
+
+        RepositoryRegistrationRequest request = new RepositoryRegistrationRequest("Mithunsurya-Kumarasamy", "devtrace");
+        String responseJson = mockMvc.perform(post("/api/repositories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+
+        String repoId = objectMapper.readTree(responseJson).get("id").asText();
+
+        // GET branches
+        mockMvc.perform(get("/api/repositories/" + repoId + "/branches"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value("master"))
+                .andExpect(jsonPath("$[1]").value("Miskyy"));
+
+        // PATCH branch
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch("/api/repositories/" + repoId + "/branch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"branch\":\"Miskyy\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.defaultBranch").value("Miskyy"));
+    }
 }

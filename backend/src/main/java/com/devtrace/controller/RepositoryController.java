@@ -45,6 +45,28 @@ public class RepositoryController {
         return ResponseEntity.ok(repositoryService.getRepositoryById(id));
     }
 
+    @GetMapping("/{id}/branches")
+    @Operation(summary = "Get repository branches", description = "Retrieves all available branches from GitHub for the registered repository.")
+    public ResponseEntity<List<String>> getRepositoryBranches(@PathVariable String id) {
+        return ResponseEntity.ok(repositoryService.getRepositoryBranches(id));
+    }
+
+    @PatchMapping("/{id}/branch")
+    @Operation(summary = "Update repository target branch", description = "Switches the active branch used for synchronization and analysis.")
+    public ResponseEntity<RepositoryResponse> updateRepositoryBranch(
+            @PathVariable String id,
+            @RequestBody(required = false) java.util.Map<String, String> request,
+            @RequestParam(required = false) String branch) {
+        String targetBranch = branch;
+        if ((targetBranch == null || targetBranch.isBlank()) && request != null) {
+            targetBranch = request.get("branch");
+        }
+        if (targetBranch == null || targetBranch.isBlank()) {
+            throw new IllegalArgumentException("Branch name must be provided in request body or 'branch' query parameter");
+        }
+        return ResponseEntity.ok(repositoryService.updateRepositoryBranch(id, targetBranch));
+    }
+
     @PostMapping("/{id}/sync")
     @Operation(summary = "Trigger repository synchronization", description = "Asynchronously initiates repository ingestion via Kafka event pipeline and returns a tracking job ID.")
     public ResponseEntity<com.devtrace.dto.SyncJobResponse> triggerSync(

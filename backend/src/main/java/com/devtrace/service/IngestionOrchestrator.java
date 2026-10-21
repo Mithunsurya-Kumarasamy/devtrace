@@ -261,6 +261,12 @@ public class IngestionOrchestrator {
         return checkpointRepo.findByRepositoryIdAndResourceType(repository.getId(), resourceType);
     }
 
+    @Transactional
+    public void resetCheckpoint(RepositoryEntity repository, String resourceType) {
+        checkpointRepo.findByRepositoryIdAndResourceType(repository.getId(), resourceType)
+                .ifPresent(checkpointRepo::delete);
+    }
+
     private String inferCategoryFromLabels(List<String> labels, String title) {
         String combined = (String.join(" ", labels) + " " + (title != null ? title : "")).toLowerCase();
         if (combined.contains("bug") || combined.contains("fix") || combined.contains("defect") || combined.contains("error")) {

@@ -63,14 +63,27 @@ public class GitHubApiClient {
     }
 
     public List<GitHubCommitDto> fetchCommits(String owner, String name, String since, int page, int perPage) {
+        return fetchCommits(owner, name, null, since, page, perPage);
+    }
+
+    public List<GitHubCommitDto> fetchCommits(String owner, String name, String branch, String since, int page, int perPage) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(String.format("%s/repos/%s/%s/commits", apiUrl, owner, name))
                 .queryParam("page", page)
                 .queryParam("per_page", perPage);
+        if (branch != null && !branch.isBlank()) {
+            builder.queryParam("sha", branch);
+        }
         if (since != null && !since.isBlank()) {
             builder.queryParam("since", since);
         }
 
         List<GitHubCommitDto> list = executeListRequest(builder.toUriString(), new ParameterizedTypeReference<List<GitHubCommitDto>>() {});
+        return list != null ? list : Collections.emptyList();
+    }
+
+    public List<GitHubBranchDto> fetchBranches(String owner, String name) {
+        String url = String.format("%s/repos/%s/%s/branches?per_page=100", apiUrl, owner, name);
+        List<GitHubBranchDto> list = executeListRequest(url, new ParameterizedTypeReference<List<GitHubBranchDto>>() {});
         return list != null ? list : Collections.emptyList();
     }
 

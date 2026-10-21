@@ -131,7 +131,7 @@ public class SyncJobService {
 
             while (hasMoreCommits && commitPage <= 10) { // Safety ceiling per sync run
                 List<GitHubCommitDto> commits = gitHubApiClient.fetchCommits(
-                        repository.getOwner(), repository.getName(), commitSince, commitPage, 100);
+                        repository.getOwner(), repository.getName(), repository.getDefaultBranch(), commitSince, commitPage, 100);
 
                 if (commits.isEmpty()) {
                     hasMoreCommits = false;

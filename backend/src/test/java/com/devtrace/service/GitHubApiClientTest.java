@@ -168,4 +168,56 @@ class GitHubApiClientTest {
 
         mockServer.verify();
     }
+
+    @Test
+    @DisplayName("Should fetch branches for repository")
+    void testFetchBranches() {
+        String json = """
+            [
+                { "name": "main", "protected": true },
+                { "name": "dev", "protected": false }
+            ]
+            """;
+
+        mockServer.expect(requestTo("https://api.github.com/repos/org/repo/branches?per_page=100"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(json, MediaType.APPLICATION_JSON));
+
+        List<com.devtrace.dto.GitHubBranchDto> branches = gitHubApiClient.fetchBranches("org", "repo");
+
+        assertEquals(2, branches.size());
+        assertEquals("main", branches.get(0).getName());
+        assertTrue(branches.get(0).isProtected());
+        assertEquals("dev", branches.get(1).getName());
+        assertFalse(branches.get(1).isProtected());
+
+        mockServer.verify();
+    }
+
+    @Test
+    @DisplayName("Should fetch commits on specific branch using sha parameter")
+    void testFetchCommitsOnSpecificBranch() {
+        String json = """
+            [
+                {
+                    "sha": "branchsha12345",
+                    "commit": {
+                        "message": "feat: branch commit",
+                        "author": { "name": "Mithun", "email": "m@d.io", "date": "2026-10-18T10:00:00Z" }
+                    }
+                }
+            ]
+            """;
+
+        mockServer.expect(requestTo("https://api.github.com/repos/org/repo/commits?page=1&per_page=50&sha=Miskyy"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(json, MediaType.APPLICATION_JSON));
+
+        List<GitHubCommitDto> commits = gitHubApiClient.fetchCommits("org", "repo", "Miskyy", null, 1, 50);
+
+        assertEquals(1, commits.size());
+        assertEquals("branchsha12345", commits.get(0).getSha());
+
+        mockServer.verify();
+    }
 }

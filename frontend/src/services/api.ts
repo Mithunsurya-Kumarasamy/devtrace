@@ -44,8 +44,18 @@ export const api = {
     return response.data;
   },
 
-  registerRepository: async (data: { owner: string; name: string }): Promise<Repository> => {
+  registerRepository: async (data: { owner?: string; name?: string; url?: string; branch?: string }): Promise<Repository> => {
     const response = await apiClient.post<Repository>('/repositories', data);
+    return response.data;
+  },
+
+  getBranches: async (id: string): Promise<string[]> => {
+    const response = await apiClient.get<string[]>(`/repositories/${id}/branches`);
+    return response.data;
+  },
+
+  updateBranch: async (id: string, branch: string): Promise<Repository> => {
+    const response = await apiClient.patch<Repository>(`/repositories/${id}/branch`, { branch });
     return response.data;
   },
 

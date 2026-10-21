@@ -7,11 +7,20 @@ interface RepositoryContextType {
   selectedRepo: Repository | null;
   selectedRepoId: string | null;
   setSelectedRepoId: (id: string) => void;
+  branches: string[];
+  currentBranch: string;
+  loadingBranches: boolean;
+  switchBranch: (branch: string) => Promise<void>;
+  refreshBranches: (repoId?: string) => Promise<void>;
   timeWindowDays: number;
   setTimeWindowDays: (days: number) => void;
   loading: boolean;
   refreshRepositories: () => Promise<void>;
-  registerRepository: (owner: string, name: string) => Promise<Repository>;
+  registerRepository: (
+    dataOrOwner: { owner?: string; name?: string; url?: string; branch?: string } | string,
+    maybeName?: string,
+    maybeBranch?: string
+  ) => Promise<Repository>;
 }
 
 const RepositoryContext = createContext<RepositoryContextType | undefined>(undefined);
@@ -19,6 +28,9 @@ const RepositoryContext = createContext<RepositoryContextType | undefined>(undef
 export const RepositoryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [selectedRepoId, setSelectedRepoId] = useState<string | null>(null);
+  const [branches, setBranches] = useState<string[]>([]);
+  const [currentBranch, setCurrentBranch] = useState<string>('master');
+  const [loadingBranches, setLoadingBranches] = useState<boolean>(false);
   const [timeWindowDays, setTimeWindowDays] = useState<number>(90);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -37,8 +49,60 @@ export const RepositoryProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  const registerRepository = async (owner: string, name: string): Promise<Repository> => {
-    const newRepo = await api.registerRepository({ owner, name });
+  const refreshBranches = async (repoId?: string) => {
+    const targetId = repoId || selectedRepoId;
+    if (!targetId) {
+      setBranches([]);
+      return;
+    }
+    try {
+      setLoadingBranches(true);
+      const branchList = await api.getBranches(targetId);
+      setBranches(branchList);
+      const repo = repositories.find((r) => r.id === targetId);
+      if (repo?.defaultBranch) {
+        setCurrentBranch(repo.defaultBranch);
+      } else if (branchList.length > 0) {
+        setCurrentBranch(branchList[0]);
+      }
+    } catch (err) {
+      console.warn('Failed to load branches', err);
+      const repo = repositories.find((r) => r.id === targetId);
+      if (repo?.defaultBranch) {
+        setBranches([repo.defaultBranch]);
+        setCurrentBranch(repo.defaultBranch);
+      }
+    } finally {
+      setLoadingBranches(false);
+    }
+  };
+
+  const switchBranch = async (newBranch: string): Promise<void> => {
+    if (!selectedRepoId || !newBranch) return;
+    try {
+      const updated = await api.updateBranch(selectedRepoId, newBranch);
+      setCurrentBranch(updated.defaultBranch || newBranch);
+      setRepositories((prev) =>
+        prev.map((r) => (r.id === selectedRepoId ? { ...r, defaultBranch: updated.defaultBranch } : r))
+      );
+    } catch (err) {
+      console.error('Failed to switch branch', err);
+      throw err;
+    }
+  };
+
+  const registerRepository = async (
+    dataOrOwner: { owner?: string; name?: string; url?: string; branch?: string } | string,
+    maybeName?: string,
+    maybeBranch?: string
+  ): Promise<Repository> => {
+    let payload: { owner?: string; name?: string; url?: string; branch?: string };
+    if (typeof dataOrOwner === 'string') {
+      payload = { owner: dataOrOwner, name: maybeName, branch: maybeBranch };
+    } else {
+      payload = dataOrOwner;
+    }
+    const newRepo = await api.registerRepository(payload);
     await refreshRepositories();
     setSelectedRepoId(newRepo.id);
     return newRepo;
@@ -47,6 +111,18 @@ export const RepositoryProvider: React.FC<{ children: ReactNode }> = ({ children
   useEffect(() => {
     refreshRepositories();
   }, []);
+
+  useEffect(() => {
+    if (selectedRepoId) {
+      const repo = repositories.find((r) => r.id === selectedRepoId);
+      if (repo?.defaultBranch) {
+        setCurrentBranch(repo.defaultBranch);
+      }
+      refreshBranches(selectedRepoId);
+    } else {
+      setBranches([]);
+    }
+  }, [selectedRepoId]);
 
   const selectedRepo = repositories.find((r) => r.id === selectedRepoId) || null;
 
@@ -57,6 +133,11 @@ export const RepositoryProvider: React.FC<{ children: ReactNode }> = ({ children
         selectedRepo,
         selectedRepoId,
         setSelectedRepoId,
+        branches,
+        currentBranch,
+        loadingBranches,
+        switchBranch,
+        refreshBranches,
         timeWindowDays,
         setTimeWindowDays,
         loading,
