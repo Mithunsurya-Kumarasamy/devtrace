@@ -45,6 +45,11 @@ public class IngestionOrchestrator {
 
     @Transactional
     public CommitEntity processCommit(RepositoryEntity repository, GitHubCommitDto dto) {
+        return processCommit(repository, dto, repository.getDefaultBranch());
+    }
+
+    @Transactional
+    public CommitEntity processCommit(RepositoryEntity repository, GitHubCommitDto dto, String branch) {
         String sha = dto.getSha();
         Optional<CommitEntity> existing = commitRepo.findByRepositoryIdAndSha(repository.getId(), sha);
 
@@ -54,6 +59,11 @@ public class IngestionOrchestrator {
             c.setSha(sha);
             return c;
         });
+
+        String effectiveBranch = (branch != null && !branch.isBlank()) ? branch : repository.getDefaultBranch();
+        if (effectiveBranch != null && !effectiveBranch.isBlank()) {
+            commit.addBranch(effectiveBranch);
+        }
 
         if (dto.getCommit() != null) {
             commit.setMessage(dto.getCommit().getMessage() != null ? dto.getCommit().getMessage() : "No message");

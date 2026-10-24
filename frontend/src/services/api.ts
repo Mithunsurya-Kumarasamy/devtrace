@@ -75,8 +75,15 @@ export const api = {
   },
 
   // Analytics & Intelligence
-  getOverview: async (repoId: string, days: number = 90): Promise<RepositoryOverview> => {
-    const response = await apiClient.get<RepositoryOverview>(`/repositories/${repoId}/analytics/overview?days=${days}`);
+  getOverview: async (repoId: string, days: number = 90, branch?: string): Promise<RepositoryOverview> => {
+    const url = `/repositories/${repoId}/analytics/overview?days=${days}${branch ? `&branch=${encodeURIComponent(branch)}` : ''}`;
+    const response = await apiClient.get<RepositoryOverview>(url);
+    return response.data;
+  },
+
+  getCommits: async (repoId: string, page: number = 0, size: number = 20, branch?: string): Promise<PageResponse<any>> => {
+    const url = `/repositories/${repoId}/commits?page=${page}&size=${size}${branch ? `&branch=${encodeURIComponent(branch)}` : ''}`;
+    const response = await apiClient.get<PageResponse<any>>(url);
     return response.data;
   },
 

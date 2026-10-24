@@ -1,8 +1,10 @@
 package com.devtrace.service.analytics;
 
+import com.devtrace.dto.analytics.CommitSummaryDto;
 import com.devtrace.dto.analytics.RepositoryOverviewDto;
 import com.devtrace.entity.*;
 import com.devtrace.repository.*;
+import org.springframework.data.domain.Page;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -185,6 +187,52 @@ class CoreAnalyticsServiceTest {
     }
 
     @Test
+    @DisplayName("Should isolate analytics and commits by branch accurately")
+    void testBranchIsolatedOverviewAndCommits() {
+        CommitEntity cMaster = new CommitEntity(testRepo, "sha-m1", "master initial", Instant.now());
+        cMaster.setBranch("master");
+        cMaster.setAuthorEmail("master-dev@devtrace.internal");
+        cMaster.addBranch("master");
+
+        CommitEntity cMiskyy1 = new CommitEntity(testRepo, "sha-k1", "miskyy feature 1", Instant.now());
+        cMiskyy1.setBranch("Miskyy");
+        cMiskyy1.setAuthorEmail("miskyy-dev@devtrace.internal");
+        cMiskyy1.addBranch("Miskyy");
+
+        CommitEntity cMiskyy2 = new CommitEntity(testRepo, "sha-k2", "miskyy feature 2", Instant.now());
+        cMiskyy2.setBranch("Miskyy");
+        cMiskyy2.setAuthorEmail("contributor2@devtrace.internal");
+        cMiskyy2.addBranch("Miskyy");
+
+        // Shared commit on both master and Miskyy
+        CommitEntity cShared = new CommitEntity(testRepo, "sha-shared", "shared root commit", Instant.now());
+        cShared.setBranch("master");
+        cShared.setAuthorEmail("master-dev@devtrace.internal");
+        cShared.addBranch("master");
+        cShared.addBranch("Miskyy");
+
+        commitRepo.saveAll(List.of(cMaster, cMiskyy1, cMiskyy2, cShared));
+
+        // Query overview for Miskyy branch
+        RepositoryOverviewDto miskyyOverview = analyticsService.getRepositoryOverview(testRepo.getId(), 30, "Miskyy");
+        assertEquals(3, miskyyOverview.getTotalCommits()); // cMiskyy1, cMiskyy2, cShared
+        assertEquals(3, miskyyOverview.getActiveContributors()); // miskyy-dev, contributor2, master-dev
+
+        // Query overview for master branch
+        RepositoryOverviewDto masterOverview = analyticsService.getRepositoryOverview(testRepo.getId(), 30, "master");
+        assertEquals(2, masterOverview.getTotalCommits()); // cMaster, cShared
+        assertEquals(1, masterOverview.getActiveContributors()); // master-dev
+
+        // Query commits page for Miskyy
+        Page<CommitSummaryDto> miskyyCommits = analyticsService.getCommits(testRepo.getId(), 0, 10, "Miskyy");
+        assertEquals(3, miskyyCommits.getTotalElements());
+
+        // Query commits page for master
+        Page<CommitSummaryDto> masterCommits = analyticsService.getCommits(testRepo.getId(), 0, 10, "master");
+        assertEquals(2, masterCommits.getTotalElements());
+    }
+
+    @Test
     @DisplayName("Should support alias getters on DTOs for frontend compatibility (BUG-08, BUG-09)")
     void testDtoAliases() {
         RepositoryOverviewDto overview = analyticsService.getRepositoryOverview(testRepo.getId(), 30);
@@ -194,3 +242,4 @@ class CoreAnalyticsServiceTest {
         assertEquals(overview.getReviewWaitingTimeHours().getP50(), overview.getReviewWaitingTimeHours().getMedian());
     }
 }
+

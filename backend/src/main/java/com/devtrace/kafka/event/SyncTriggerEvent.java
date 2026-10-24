@@ -6,15 +6,21 @@ public class SyncTriggerEvent {
     private String owner;
     private String name;
     private boolean forceFullSync;
+    private String branch;
 
     public SyncTriggerEvent() {}
 
     public SyncTriggerEvent(String jobId, String repositoryId, String owner, String name, boolean forceFullSync) {
+        this(jobId, repositoryId, owner, name, forceFullSync, null);
+    }
+
+    public SyncTriggerEvent(String jobId, String repositoryId, String owner, String name, boolean forceFullSync, String branch) {
         this.jobId = jobId;
         this.repositoryId = repositoryId;
         this.owner = owner;
         this.name = name;
         this.forceFullSync = forceFullSync;
+        this.branch = branch;
     }
 
     public String getJobId() { return jobId; }
@@ -31,4 +37,7 @@ public class SyncTriggerEvent {
 
     public boolean isForceFullSync() { return forceFullSync; }
     public void setForceFullSync(boolean forceFullSync) { this.forceFullSync = forceFullSync; }
+
+    public String getBranch() { return branch; }
+    public void setBranch(String branch) { this.branch = branch; }
 }

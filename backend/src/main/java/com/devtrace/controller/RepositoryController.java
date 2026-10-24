@@ -71,8 +71,9 @@ public class RepositoryController {
     @Operation(summary = "Trigger repository synchronization", description = "Asynchronously initiates repository ingestion via Kafka event pipeline and returns a tracking job ID.")
     public ResponseEntity<com.devtrace.dto.SyncJobResponse> triggerSync(
             @PathVariable String id,
-            @RequestParam(required = false, defaultValue = "false") boolean force) {
-        return ResponseEntity.accepted().body(syncJobService.triggerSync(id, force));
+            @RequestParam(required = false, defaultValue = "false") boolean force,
+            @RequestParam(required = false) String branch) {
+        return ResponseEntity.accepted().body(syncJobService.triggerSync(id, force, branch));
     }
 
     @GetMapping("/{id}/sync-jobs")

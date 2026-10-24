@@ -85,6 +85,8 @@ export const RepositoryProvider: React.FC<{ children: ReactNode }> = ({ children
       setRepositories((prev) =>
         prev.map((r) => (r.id === selectedRepoId ? { ...r, defaultBranch: updated.defaultBranch } : r))
       );
+      // Automatically trigger sync for the new branch so its commits are ingested
+      api.triggerSync(selectedRepoId).then(refreshRepositories).catch((e) => console.warn('Branch auto-sync failed', e));
     } catch (err) {
       console.error('Failed to switch branch', err);
       throw err;

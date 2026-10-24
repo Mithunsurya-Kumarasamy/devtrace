@@ -53,11 +53,30 @@ public class CommitEntity {
     @Column(name = "total_changes")
     private int totalChanges = 0;
 
+    @Column(length = 100)
+    private String branch;
+
+    @Column(columnDefinition = "TEXT")
+    private String branches;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     @OneToMany(mappedBy = "commit", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommitFileEntity> files = new ArrayList<>();
+
+    public void addBranch(String branchName) {
+        if (branchName == null || branchName.isBlank()) return;
+        String b = branchName.trim();
+        if (this.branch == null || this.branch.isBlank()) {
+            this.branch = b;
+        }
+        if (this.branches == null || this.branches.isBlank()) {
+            this.branches = "," + b + ",";
+        } else if (!this.branches.contains("," + b + ",")) {
+            this.branches = this.branches + b + ",";
+        }
+    }
 
     public CommitEntity() {
         this.id = UUID.randomUUID().toString();
@@ -120,4 +139,10 @@ public class CommitEntity {
 
     public List<CommitFileEntity> getFiles() { return files; }
     public void setFiles(List<CommitFileEntity> files) { this.files = files; }
+
+    public String getBranch() { return branch; }
+    public void setBranch(String branch) { this.branch = branch; }
+
+    public String getBranches() { return branches; }
+    public void setBranches(String branches) { this.branches = branches; }
 }

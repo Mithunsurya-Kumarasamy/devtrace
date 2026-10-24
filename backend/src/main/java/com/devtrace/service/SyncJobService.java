@@ -49,6 +49,11 @@ public class SyncJobService {
 
     @Transactional
     public SyncJobResponse triggerSync(String repositoryId, boolean forceFullSync) {
+        return triggerSync(repositoryId, forceFullSync, null);
+    }
+
+    @Transactional
+    public SyncJobResponse triggerSync(String repositoryId, boolean forceFullSync, String branch) {
         RepositoryEntity repository = repositoryRepo.findById(repositoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Repository not found with ID: " + repositoryId));
 
@@ -70,7 +75,8 @@ public class SyncJobService {
                         repository.getId(),
                         repository.getOwner(),
                         repository.getName(),
-                        forceFullSync
+                        forceFullSync,
+                        branch
                 ));
             }
         } catch (Exception e) {
@@ -79,7 +85,7 @@ public class SyncJobService {
 
         // Kick off async execution only if not dispatched to Kafka consumer
         if (!kafkaDispatched) {
-            executeSyncAsync(job.getId(), repository.getId(), forceFullSync);
+            executeSyncAsync(job.getId(), repository.getId(), forceFullSync, branch);
         }
 
         return SyncJobResponse.fromEntity(job);
@@ -87,12 +93,22 @@ public class SyncJobService {
 
     @Async
     public CompletableFuture<Void> executeSyncAsync(String jobId, String repositoryId, boolean forceFullSync) {
-        executeSync(jobId, repositoryId, forceFullSync);
+        return executeSyncAsync(jobId, repositoryId, forceFullSync, null);
+    }
+
+    @Async
+    public CompletableFuture<Void> executeSyncAsync(String jobId, String repositoryId, boolean forceFullSync, String branch) {
+        executeSync(jobId, repositoryId, forceFullSync, branch);
         return CompletableFuture.completedFuture(null);
     }
 
     @Transactional
     public void executeSync(String jobId, String repositoryId, boolean forceFullSync) {
+        executeSync(jobId, repositoryId, forceFullSync, null);
+    }
+
+    @Transactional
+    public void executeSync(String jobId, String repositoryId, boolean forceFullSync, String branch) {
         Optional<SyncJobEntity> jobOpt = syncJobRepo.findById(jobId);
         Optional<RepositoryEntity> repoOpt = repositoryRepo.findById(repositoryId);
 
@@ -104,7 +120,7 @@ public class SyncJobService {
         SyncJobEntity job = jobOpt.get();
         RepositoryEntity repository = repoOpt.get();
 
-        log.info("Starting ingestion sync: repo={}, jobId={}", repository.getFullName(), jobId);
+        log.info("Starting ingestion sync: repo={}, jobId={}, branch={}", repository.getFullName(), jobId, branch);
         job.setStatus("RUNNING");
         job.setCurrentStep("INGESTING_COMMITS");
         job.setProgressPercentage(10);
@@ -117,9 +133,11 @@ public class SyncJobService {
             int totalProcessed = 0;
 
             // 1. Commits Stage
+            String branchName = (branch != null && !branch.isBlank()) ? branch.trim() : (repository.getDefaultBranch() != null ? repository.getDefaultBranch() : "master");
+            String branchCheckpoint = "COMMITS_" + branchName;
             String commitSince = null;
             if (!forceFullSync) {
-                Optional<SyncCheckpointEntity> cp = ingestionOrchestrator.getCheckpoint(repository, "COMMITS");
+                Optional<SyncCheckpointEntity> cp = ingestionOrchestrator.getCheckpoint(repository, branchCheckpoint);
                 if (cp.isPresent() && cp.get().getLastSyncTimestamp() != null) {
                     commitSince = cp.get().getLastSyncTimestamp().toString();
                 }
@@ -131,13 +149,13 @@ public class SyncJobService {
 
             while (hasMoreCommits && commitPage <= 10) { // Safety ceiling per sync run
                 List<GitHubCommitDto> commits = gitHubApiClient.fetchCommits(
-                        repository.getOwner(), repository.getName(), repository.getDefaultBranch(), commitSince, commitPage, 100);
+                        repository.getOwner(), repository.getName(), branchName, commitSince, commitPage, 100);
 
                 if (commits.isEmpty()) {
                     hasMoreCommits = false;
                 } else {
                     for (GitHubCommitDto c : commits) {
-                        ingestionOrchestrator.processCommit(repository, c);
+                        ingestionOrchestrator.processCommit(repository, c, branchName);
                         totalProcessed++;
                         if (c.getCommit() != null && c.getCommit().getCommitter() != null && c.getCommit().getCommitter().getDate() != null) {
                             Instant t = Instant.parse(c.getCommit().getCommitter().getDate());
@@ -152,7 +170,10 @@ public class SyncJobService {
             }
 
             if (latestCommitTime != null) {
-                ingestionOrchestrator.updateCheckpoint(repository, "COMMITS", latestCommitTime, null);
+                ingestionOrchestrator.updateCheckpoint(repository, branchCheckpoint, latestCommitTime, null);
+                if (branchName.equals(repository.getDefaultBranch())) {
+                    ingestionOrchestrator.updateCheckpoint(repository, "COMMITS", latestCommitTime, null);
+                }
             }
 
             job.setCurrentStep("INGESTING_PULL_REQUESTS");
