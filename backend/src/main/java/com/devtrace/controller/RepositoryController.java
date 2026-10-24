@@ -89,4 +89,11 @@ public class RepositoryController {
             @PathVariable String jobId) {
         return ResponseEntity.ok(syncJobService.getSyncJob(id, jobId));
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete repository", description = "Deletes a repository and all associated ingestion, metrics, and analytics data.")
+    public ResponseEntity<Void> deleteRepository(@PathVariable String id) {
+        repositoryService.deleteRepository(id);
+        return ResponseEntity.noContent().build();
+    }
 }

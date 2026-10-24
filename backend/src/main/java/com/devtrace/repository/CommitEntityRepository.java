@@ -37,4 +37,10 @@ public interface CommitEntityRepository extends JpaRepository<CommitEntity, Stri
 
     @Query("SELECT COUNT(c) FROM CommitEntity c WHERE c.repository.id = :repoId AND (LOWER(c.authorName) = LOWER(:login) OR LOWER(c.authorEmail) LIKE LOWER(CONCAT('%', :login, '%')))")
     long countCommitsByRepositoryIdAndAuthor(@Param("repoId") String repoId, @Param("login") String login);
+
+    @Query("SELECT DISTINCT c.branch FROM CommitEntity c WHERE c.repository.id = :repoId AND c.branch IS NOT NULL")
+    List<String> findDistinctBranchesByRepositoryId(@Param("repoId") String repoId);
+
+    @Query("SELECT DISTINCT c.branches FROM CommitEntity c WHERE c.repository.id = :repoId AND c.branches IS NOT NULL")
+    List<String> findDistinctBranchListsByRepositoryId(@Param("repoId") String repoId);
 }

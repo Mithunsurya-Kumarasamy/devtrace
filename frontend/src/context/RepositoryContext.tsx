@@ -39,8 +39,12 @@ export const RepositoryProvider: React.FC<{ children: ReactNode }> = ({ children
       setLoading(true);
       const repos = await api.getRepositories();
       setRepositories(repos);
-      if (repos.length > 0 && !selectedRepoId) {
-        setSelectedRepoId(repos[0].id);
+      if (repos.length > 0) {
+        if (!selectedRepoId || !repos.some((r) => r.id === selectedRepoId)) {
+          setSelectedRepoId(repos[0].id);
+        }
+      } else {
+        setSelectedRepoId(null);
       }
     } catch (err) {
       console.error('Failed to load repositories', err);

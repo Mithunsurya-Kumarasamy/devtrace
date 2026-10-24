@@ -154,5 +154,13 @@ class RepositoryControllerTest {
                         .content("{\"branch\":\"Miskyy\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.defaultBranch").value("Miskyy"));
+
+        // DELETE repository
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/repositories/" + repoId))
+                .andExpect(status().isNoContent());
+
+        // Verify 404 after deletion
+        mockMvc.perform(get("/api/repositories/" + repoId))
+                .andExpect(status().isNotFound());
     }
 }

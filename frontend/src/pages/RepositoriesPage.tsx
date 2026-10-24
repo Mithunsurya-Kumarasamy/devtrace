@@ -11,7 +11,8 @@ import {
   GitBranch,
   Link2,
   Sparkles,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import { api } from '../services/api';
 import { useRepository } from '../context/RepositoryContext';
@@ -40,6 +41,7 @@ export const RepositoriesPage: React.FC<RepositoriesPageProps> = ({ onNavigateTa
   const [submitting, setSubmitting] = useState(false);
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [switchingBranchId, setSwitchingBranchId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -117,6 +119,23 @@ export const RepositoriesPage: React.FC<RepositoriesPageProps> = ({ onNavigateTa
       setError(err?.response?.data?.message || err?.message || 'Failed to switch branch');
     } finally {
       setSwitchingBranchId(null);
+    }
+  };
+
+  const handleDeleteRepository = async (repoId: string, fullName: string) => {
+    if (!window.confirm(`Are you sure you want to delete repository '${fullName}' from DevTrace?`)) {
+      return;
+    }
+    try {
+      setDeletingId(repoId);
+      setError(null);
+      await api.deleteRepository(repoId);
+      await refreshRepositories();
+      setSuccessMsg(`Deleted repository '${fullName}'`);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || 'Failed to delete repository');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -416,6 +435,15 @@ export const RepositoriesPage: React.FC<RepositoriesPageProps> = ({ onNavigateTa
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
+
+                    <button
+                      onClick={() => handleDeleteRepository(repo.id, repo.fullName)}
+                      disabled={deletingId === repo.id}
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 transition border border-border hover:border-rose-900/40 disabled:opacity-50"
+                      title="Delete Repository"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               );

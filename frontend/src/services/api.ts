@@ -44,6 +44,10 @@ export const api = {
     return response.data;
   },
 
+  deleteRepository: async (id: string): Promise<void> => {
+    await apiClient.delete(`/repositories/${id}`);
+  },
+
   registerRepository: async (data: { owner?: string; name?: string; url?: string; branch?: string }): Promise<Repository> => {
     const response = await apiClient.post<Repository>('/repositories', data);
     return response.data;
