@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, Github, Radio, CheckCircle, AlertCircle, Calendar, ChevronDown, FolderGit2 } from 'lucide-react';
+import { Activity, Github, Radio, CheckCircle, AlertCircle, Calendar, ChevronDown, FolderGit2, GitBranch, Loader2 } from 'lucide-react';
 import { api } from '../../services/api';
 import { HealthResponse } from '../../types';
 import { useRepository } from '../../context/RepositoryContext';
@@ -11,7 +11,18 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = () => {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const { repositories, selectedRepoId, setSelectedRepoId, timeWindowDays, setTimeWindowDays } = useRepository();
+  const { 
+    repositories, 
+    selectedRepo, 
+    selectedRepoId, 
+    setSelectedRepoId, 
+    branches, 
+    currentBranch, 
+    switchBranch, 
+    loadingBranches, 
+    timeWindowDays, 
+    setTimeWindowDays 
+  } = useRepository();
 
   useEffect(() => {
     api.getHealth()
@@ -26,7 +37,7 @@ export const Header: React.FC<HeaderProps> = () => {
 
   return (
     <header className="h-16 bg-surface border-b border-border flex items-center justify-between px-6 sticky top-0 z-50">
-      <div className="flex items-center space-x-6">
+      <div className="flex items-center space-x-4 lg:space-x-6">
         {/* Brand */}
         <div className="flex items-center space-x-3">
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-600/10 border border-blue-500/20 text-blue-400 shadow-inner">
@@ -64,6 +75,40 @@ export const Header: React.FC<HeaderProps> = () => {
             <span className="text-xs text-slate-500 italic">No repositories registered</span>
           )}
         </div>
+
+        {/* Branch Dropdown Selector */}
+        {selectedRepo && (
+          <div className="hidden xl:flex items-center space-x-2 bg-slate-900 border border-border px-3 py-1.5 rounded-lg">
+            {loadingBranches ? (
+              <Loader2 className="w-3.5 h-3.5 text-emerald-400 animate-spin shrink-0" />
+            ) : (
+              <GitBranch className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            )}
+            <span className="text-xs text-slate-400">Branch:</span>
+            <div className="relative inline-block">
+              <select
+                value={currentBranch}
+                onChange={(e) => switchBranch(e.target.value)}
+                disabled={loadingBranches}
+                className="bg-transparent text-xs font-mono font-medium text-emerald-300 outline-none cursor-pointer pr-4 appearance-none hover:text-emerald-200 transition"
+                title="Active Branch for Ingestion & Analysis"
+              >
+                {branches.length > 0 ? (
+                  branches.map((b) => (
+                    <option key={b} value={b} className="bg-slate-900 text-slate-200">
+                      {b}
+                    </option>
+                  ))
+                ) : (
+                  <option value={currentBranch} className="bg-slate-900 text-slate-200">
+                    {currentBranch}
+                  </option>
+                )}
+              </select>
+              <ChevronDown className="w-3 h-3 text-slate-400 absolute right-0 top-1 pointer-events-none" />
+            </div>
+          </div>
+        )}
 
         {/* Time Window Selector */}
         <div className="hidden md:flex items-center space-x-1 bg-slate-900/80 border border-border p-1 rounded-lg text-xs">

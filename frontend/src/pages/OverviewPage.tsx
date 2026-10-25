@@ -12,7 +12,9 @@ import {
   Users,
   Activity,
   Zap,
-  ArrowRight
+  ArrowRight,
+  GitBranch,
+  FolderGit2
 } from 'lucide-react';
 import { api } from '../services/api';
 import { HealthResponse, RepositoryOverview } from '../types';
@@ -23,7 +25,7 @@ interface OverviewPageProps {
 }
 
 export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => {
-  const { selectedRepo, selectedRepoId, timeWindowDays } = useRepository();
+  const { selectedRepo, selectedRepoId, currentBranch, timeWindowDays } = useRepository();
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [overview, setOverview] = useState<RepositoryOverview | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -32,7 +34,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
 
   useEffect(() => {
     loadData();
-  }, [selectedRepoId, timeWindowDays]);
+  }, [selectedRepoId, currentBranch, timeWindowDays]);
 
   const loadData = async () => {
     try {
@@ -43,7 +45,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
 
       if (selectedRepoId) {
         try {
-          const overviewData = await api.getOverview(selectedRepoId, timeWindowDays);
+          const overviewData = await api.getOverview(selectedRepoId, timeWindowDays, currentBranch);
           setOverview(overviewData);
         } catch (e: any) {
           console.warn('No overview data yet for selected repo', e);
@@ -93,6 +95,15 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
           <p className="text-slate-400 mt-1 text-sm max-w-2xl">
             DevTrace continuously transforms GitHub repository activity into process mining, workflow bottleneck identification, churn hotspots, and explainable PR risk analytics.
           </p>
+          {selectedRepo && (
+            <div className="flex items-center space-x-2 mt-2 text-xs font-mono">
+              <FolderGit2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <span className="text-white font-medium">{selectedRepo.fullName}</span>
+              <span className="text-slate-600">•</span>
+              <GitBranch className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="text-emerald-300 font-medium">branch: {currentBranch || selectedRepo.defaultBranch}</span>
+            </div>
+          )}
         </div>
         <div className="mt-4 lg:mt-0 flex items-center space-x-3">
           {selectedRepo && (

@@ -104,8 +104,9 @@ public class AnalyticsController {
     @Operation(summary = "Get repository analytics overview", description = "Calculates cycle time percentiles, review wait times, activity trends, and transparent engineering health scores.")
     public ResponseEntity<RepositoryOverviewDto> getOverview(
             @PathVariable String id,
-            @RequestParam(required = false, defaultValue = "30") int days) {
-        return ResponseEntity.ok(analyticsService.getRepositoryOverview(id, days));
+            @RequestParam(required = false, defaultValue = "30") int days,
+            @RequestParam(required = false) String branch) {
+        return ResponseEntity.ok(analyticsService.getRepositoryOverview(id, days, branch));
     }
 
     @GetMapping("/commits")
@@ -113,8 +114,9 @@ public class AnalyticsController {
     public ResponseEntity<Page<CommitSummaryDto>> getCommits(
             @PathVariable String id,
             @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "20") int size) {
-        return ResponseEntity.ok(analyticsService.getCommits(id, page, size));
+            @RequestParam(required = false, defaultValue = "20") int size,
+            @RequestParam(required = false) String branch) {
+        return ResponseEntity.ok(analyticsService.getCommits(id, page, size, branch));
     }
 
     @GetMapping("/pull-requests")

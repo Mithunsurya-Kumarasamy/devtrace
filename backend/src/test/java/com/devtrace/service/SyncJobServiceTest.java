@@ -138,7 +138,7 @@ class SyncJobServiceTest {
         releaseDto.setName("Production Release 1.0.0");
         releaseDto.setPublishedAt("2026-10-18T14:00:00Z");
 
-        when(gitHubApiClient.fetchCommits(anyString(), anyString(), any(), eq(1), anyInt()))
+        when(gitHubApiClient.fetchCommits(anyString(), anyString(), any(), any(), eq(1), anyInt()))
                 .thenReturn(List.of(commitDto));
         when(gitHubApiClient.fetchPullRequests(anyString(), anyString(), anyString(), eq(1), anyInt()))
                 .thenReturn(List.of(prDto));
@@ -195,7 +195,7 @@ class SyncJobServiceTest {
         stats.setAdditions(20);
         commitDto.setStats(stats);
 
-        when(gitHubApiClient.fetchCommits(anyString(), anyString(), any(), eq(1), anyInt()))
+        when(gitHubApiClient.fetchCommits(anyString(), anyString(), any(), any(), eq(1), anyInt()))
                 .thenReturn(List.of(commitDto));
         when(gitHubApiClient.fetchPullRequests(anyString(), anyString(), anyString(), eq(1), anyInt()))
                 .thenReturn(Collections.emptyList());
@@ -225,7 +225,7 @@ class SyncJobServiceTest {
     @Test
     @DisplayName("Should transition job to FAILED state and capture error message on failure")
     void testFailureRecovery() {
-        when(gitHubApiClient.fetchCommits(anyString(), anyString(), any(), eq(1), anyInt()))
+        when(gitHubApiClient.fetchCommits(anyString(), anyString(), any(), any(), eq(1), anyInt()))
                 .thenThrow(new GitHubApiException("GitHub connection timed out", 504));
 
         SyncJobEntity job = syncJobRepo.save(new SyncJobEntity(testRepo));

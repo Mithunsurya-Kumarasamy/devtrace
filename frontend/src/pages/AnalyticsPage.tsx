@@ -10,21 +10,21 @@ import { RepositoryOverview } from '../types';
 import { useRepository } from '../context/RepositoryContext';
 
 export const AnalyticsPage: React.FC = () => {
-  const { selectedRepo, selectedRepoId, timeWindowDays } = useRepository();
+  const { selectedRepo, selectedRepoId, currentBranch, timeWindowDays } = useRepository();
   const [overview, setOverview] = useState<RepositoryOverview | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadAnalytics();
-  }, [selectedRepoId, timeWindowDays]);
+  }, [selectedRepoId, currentBranch, timeWindowDays]);
 
   const loadAnalytics = async () => {
     if (!selectedRepoId) return;
     try {
       setLoading(true);
       setError(null);
-      const data = await api.getOverview(selectedRepoId, timeWindowDays);
+      const data = await api.getOverview(selectedRepoId, timeWindowDays, currentBranch);
       setOverview(data);
     } catch (err: any) {
       setError(err?.message || 'Failed to load repository analytics');

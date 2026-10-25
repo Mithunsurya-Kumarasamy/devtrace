@@ -42,28 +42,34 @@ public class CoreAnalyticsService {
 
     @Transactional(readOnly = true)
     public RepositoryOverviewDto getRepositoryOverview(String repositoryId, int days) {
+        return getRepositoryOverview(repositoryId, days, null);
+    }
+
+    @Transactional(readOnly = true)
+    public RepositoryOverviewDto getRepositoryOverview(String repositoryId, int days, String branch) {
         RepositoryEntity repo = repositoryRepo.findById(repositoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Repository not found with ID: " + repositoryId));
 
+        String effectiveBranch = (branch != null && !branch.isBlank()) ? branch.trim() : null;
         int windowDays = (days > 0 && days <= 365) ? days : 30;
         Instant since = Instant.now().minus(Duration.ofDays(windowDays));
 
         RepositoryOverviewDto overview = new RepositoryOverviewDto();
         overview.setRepositoryId(repo.getId());
         overview.setFullName(repo.getFullName());
-        overview.setDefaultBranch(repo.getDefaultBranch());
+        overview.setDefaultBranch(effectiveBranch != null ? effectiveBranch : repo.getDefaultBranch());
         overview.setSyncStatus(repo.getSyncStatus());
         overview.setLastSyncedAt(repo.getLastSyncedAt() != null ? repo.getLastSyncedAt().toString() : null);
         overview.setTimeWindowDays(windowDays);
 
-        // Raw counts
-        overview.setTotalCommits(commitRepo.countByRepositoryId(repositoryId));
+        // Branch-filtered counts
+        overview.setTotalCommits(commitRepo.countByRepositoryIdAndBranch(repositoryId, effectiveBranch));
         overview.setTotalPullRequests(pullRequestRepo.countByRepositoryId(repositoryId));
         overview.setOpenPullRequests((int) pullRequestRepo.countByRepositoryIdAndState(repositoryId, "open"));
         overview.setTotalIssues(issueRepo.countByRepositoryId(repositoryId));
         overview.setOpenIssues((int) issueRepo.countByRepositoryIdAndState(repositoryId, "open"));
         overview.setTotalReleases(releaseRepo.countByRepositoryId(repositoryId));
-        overview.setActiveContributors(commitRepo.countDistinctAuthorsByRepositoryId(repositoryId));
+        overview.setActiveContributors(commitRepo.countDistinctAuthorsByRepositoryIdAndBranch(repositoryId, effectiveBranch));
 
         // Pull Requests in window
         List<PullRequestEntity> allPrs = pullRequestRepo.findByRepositoryIdOrderByCreatedAtAsc(repositoryId);
@@ -101,14 +107,23 @@ public class CoreAnalyticsService {
         ));
 
         // 4. Activity Trends for recent window (daily breakdown)
-        overview.setRecentActivityTrends(calculateActivityTrends(repositoryId, Math.min(windowDays, 30)));
+        overview.setRecentActivityTrends(calculateActivityTrends(repositoryId, Math.min(windowDays, 30), effectiveBranch));
 
         return overview;
     }
 
     @Transactional(readOnly = true)
     public Page<CommitSummaryDto> getCommits(String repositoryId, int page, int size) {
+        return getCommits(repositoryId, page, size, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CommitSummaryDto> getCommits(String repositoryId, int page, int size, String branch) {
         Pageable pageable = PageRequest.of(Math.max(0, page), Math.min(100, Math.max(1, size)));
+        if (branch != null && !branch.isBlank()) {
+            return commitRepo.findByRepositoryIdAndBranchOrderByCommitDateDesc(repositoryId, branch.trim(), pageable)
+                    .map(CommitSummaryDto::fromEntity);
+        }
         return commitRepo.findByRepositoryIdOrderByCommitDateDesc(repositoryId, pageable)
                 .map(CommitSummaryDto::fromEntity);
     }
@@ -203,7 +218,7 @@ public class CoreAnalyticsService {
         );
     }
 
-    private List<ActivityTrendDto> calculateActivityTrends(String repositoryId, int days) {
+    private List<ActivityTrendDto> calculateActivityTrends(String repositoryId, int days, String branch) {
         Map<String, ActivityTrendDto> map = new LinkedHashMap<>();
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
 
@@ -216,7 +231,7 @@ public class CoreAnalyticsService {
         Instant since = today.minusDays(days).atStartOfDay().toInstant(ZoneOffset.UTC);
         Instant until = Instant.now();
 
-        List<CommitEntity> commits = commitRepo.findByRepositoryIdAndCommitDateBetweenOrderByCommitDateAsc(repositoryId, since, until);
+        List<CommitEntity> commits = commitRepo.findByRepositoryIdAndBranchAndCommitDateBetweenOrderByCommitDateAsc(repositoryId, branch, since, until);
         for (CommitEntity c : commits) {
             String d = c.getCommitDate().atZone(ZoneOffset.UTC).toLocalDate().toString();
             ActivityTrendDto dto = map.get(d);

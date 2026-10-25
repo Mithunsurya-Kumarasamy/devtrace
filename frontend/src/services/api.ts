@@ -44,8 +44,22 @@ export const api = {
     return response.data;
   },
 
-  registerRepository: async (data: { owner: string; name: string }): Promise<Repository> => {
+  deleteRepository: async (id: string): Promise<void> => {
+    await apiClient.delete(`/repositories/${id}`);
+  },
+
+  registerRepository: async (data: { owner?: string; name?: string; url?: string; branch?: string }): Promise<Repository> => {
     const response = await apiClient.post<Repository>('/repositories', data);
+    return response.data;
+  },
+
+  getBranches: async (id: string): Promise<string[]> => {
+    const response = await apiClient.get<string[]>(`/repositories/${id}/branches`);
+    return response.data;
+  },
+
+  updateBranch: async (id: string, branch: string): Promise<Repository> => {
+    const response = await apiClient.patch<Repository>(`/repositories/${id}/branch`, { branch });
     return response.data;
   },
 
@@ -65,8 +79,15 @@ export const api = {
   },
 
   // Analytics & Intelligence
-  getOverview: async (repoId: string, days: number = 90): Promise<RepositoryOverview> => {
-    const response = await apiClient.get<RepositoryOverview>(`/repositories/${repoId}/analytics/overview?days=${days}`);
+  getOverview: async (repoId: string, days: number = 90, branch?: string): Promise<RepositoryOverview> => {
+    const url = `/repositories/${repoId}/analytics/overview?days=${days}${branch ? `&branch=${encodeURIComponent(branch)}` : ''}`;
+    const response = await apiClient.get<RepositoryOverview>(url);
+    return response.data;
+  },
+
+  getCommits: async (repoId: string, page: number = 0, size: number = 20, branch?: string): Promise<PageResponse<any>> => {
+    const url = `/repositories/${repoId}/commits?page=${page}&size=${size}${branch ? `&branch=${encodeURIComponent(branch)}` : ''}`;
+    const response = await apiClient.get<PageResponse<any>>(url);
     return response.data;
   },
 
