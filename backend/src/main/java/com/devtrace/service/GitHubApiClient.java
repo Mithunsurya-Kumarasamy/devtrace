@@ -110,6 +110,11 @@ public class GitHubApiClient {
         return list != null ? list : Collections.emptyList();
     }
 
+    public GitHubPullRequestDto fetchPullRequestDetails(String owner, String name, int prNumber) {
+        String url = String.format("%s/repos/%s/%s/pulls/%d", apiUrl, owner, name, prNumber);
+        return executeRequest(url, HttpMethod.GET, GitHubPullRequestDto.class);
+    }
+
     public List<GitHubIssueDto> fetchIssues(String owner, String name, String state, String since, int page, int perPage) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(String.format("%s/repos/%s/%s/issues", apiUrl, owner, name))
                 .queryParam("state", state != null ? state : "all")

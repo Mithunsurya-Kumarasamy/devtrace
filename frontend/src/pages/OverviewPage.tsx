@@ -74,7 +74,8 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
     }
   };
 
-  const getHealthBadgeColor = (score: number) => {
+  const getHealthBadgeColor = (score?: number) => {
+    if (score === undefined || score === null) return 'text-slate-400 bg-slate-500/10 border-slate-500/30';
     if (score >= 80) return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
     if (score >= 60) return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
     if (score >= 40) return 'text-amber-400 bg-amber-500/10 border-amber-500/30';
@@ -157,11 +158,13 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
                 </div>
                 <div className="mt-4 flex items-baseline space-x-3">
                   <span className="text-5xl font-extrabold text-white font-mono">
-                    {overview?.healthScore?.composite ?? overview?.healthScore?.compositeScore ?? 85}
+                    {overview?.healthScore?.composite !== undefined ? overview.healthScore.composite : '--'}
                   </span>
                   <span className="text-sm text-slate-400">/ 100</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold border ${getHealthBadgeColor(overview?.healthScore?.composite ?? overview?.healthScore?.compositeScore ?? 85)}`}>
-                    {(overview?.healthScore?.composite ?? overview?.healthScore?.compositeScore ?? 85) >= 75 ? 'Healthy Pipeline' : 'Friction Detected'}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold border ${getHealthBadgeColor(overview?.healthScore?.composite)}`}>
+                    {overview?.healthScore?.composite !== undefined
+                      ? (overview.healthScore.composite >= 75 ? 'Healthy Pipeline' : 'Friction Detected')
+                      : 'Pending Evaluation'}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-2">
@@ -173,34 +176,42 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
               <div className="mt-6 space-y-2.5 pt-4 border-t border-border">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-400">Code Stability</span>
-                  <span className="text-slate-200 font-mono font-medium">{overview?.healthScore?.codeStability ?? 88}%</span>
+                  <span className="text-slate-200 font-mono font-medium">
+                    {overview?.healthScore?.codeStability !== undefined ? `${overview.healthScore.codeStability}%` : '--'}
+                  </span>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${overview?.healthScore?.codeStability ?? 88}%` }}></div>
+                  <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${overview?.healthScore?.codeStability ?? 0}%` }}></div>
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-400">Review Efficiency</span>
-                  <span className="text-slate-200 font-mono font-medium">{overview?.healthScore?.reviewEfficiency ?? 82}%</span>
+                  <span className="text-slate-200 font-mono font-medium">
+                    {overview?.healthScore?.reviewEfficiency !== undefined ? `${overview.healthScore.reviewEfficiency}%` : '--'}
+                  </span>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${overview?.healthScore?.reviewEfficiency ?? 82}%` }}></div>
+                  <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${overview?.healthScore?.reviewEfficiency ?? 0}%` }}></div>
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-400">Release Cadence</span>
-                  <span className="text-slate-200 font-mono font-medium">{overview?.healthScore?.releaseCadence ?? 79}%</span>
+                  <span className="text-slate-200 font-mono font-medium">
+                    {overview?.healthScore?.releaseCadence !== undefined ? `${overview.healthScore.releaseCadence}%` : '--'}
+                  </span>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${overview?.healthScore?.releaseCadence ?? 79}%` }}></div>
+                  <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${overview?.healthScore?.releaseCadence ?? 0}%` }}></div>
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-400">Collaboration Resilience</span>
-                  <span className="text-slate-200 font-mono font-medium">{overview?.healthScore?.collaborationResilience ?? 85}%</span>
+                  <span className="text-slate-200 font-mono font-medium">
+                    {overview?.healthScore?.collaborationResilience !== undefined ? `${overview.healthScore.collaborationResilience}%` : '--'}
+                  </span>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-cyan-500 h-1.5 rounded-full" style={{ width: `${overview?.healthScore?.collaborationResilience ?? 85}%` }}></div>
+                  <div className="bg-cyan-500 h-1.5 rounded-full" style={{ width: `${overview?.healthScore?.collaborationResilience ?? 0}%` }}></div>
                 </div>
               </div>
             </div>
@@ -216,7 +227,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
                   <div className="text-2xl font-bold text-white font-mono">
                     {overview?.totalCommits ?? 0}
                   </div>
-                  <span className="text-[11px] text-slate-400 mt-1 block">In {timeWindowDays}d window</span>
+                  <span className="text-[11px] text-slate-400 mt-1 block">Repository total</span>
                 </div>
               </div>
 
@@ -299,25 +310,33 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({ onNavigateTab }) => 
                   <div className="p-3 bg-surface rounded-lg border border-border">
                     <span className="text-xs text-slate-400 block">Cycle Time (Median)</span>
                     <span className="text-xl font-bold text-white font-mono mt-1 block">
-                      {overview?.prCycleTimeHours?.median?.toFixed(1) ?? overview?.prCycleTimeHours?.p50?.toFixed(1) ?? '14.2'}h
+                      {overview?.mergedPullRequests && overview.mergedPullRequests > 0 && overview?.prCycleTimeHours?.median !== undefined && overview.prCycleTimeHours.median > 0
+                        ? `${overview.prCycleTimeHours.median.toFixed(1)}h`
+                        : (overview?.mergedPullRequests && overview.mergedPullRequests > 0 ? '0.0h' : 'N/A')}
                     </span>
                   </div>
                   <div className="p-3 bg-surface rounded-lg border border-border">
                     <span className="text-xs text-slate-400 block">Cycle Time (P75)</span>
                     <span className="text-xl font-bold text-slate-300 font-mono mt-1 block">
-                      {overview?.prCycleTimeHours?.p75?.toFixed(1) ?? '28.5'}h
+                      {overview?.mergedPullRequests && overview.mergedPullRequests > 0 && overview?.prCycleTimeHours?.p75 !== undefined && overview.prCycleTimeHours.p75 > 0
+                        ? `${overview.prCycleTimeHours.p75.toFixed(1)}h`
+                        : (overview?.mergedPullRequests && overview.mergedPullRequests > 0 ? '0.0h' : 'N/A')}
                     </span>
                   </div>
                   <div className="p-3 bg-surface rounded-lg border border-border">
                     <span className="text-xs text-slate-400 block">Review Wait (Median)</span>
                     <span className="text-xl font-bold text-amber-400 font-mono mt-1 block">
-                      {overview?.reviewWaitingTimeHours?.median?.toFixed(1) ?? overview?.reviewWaitingTimeHours?.p50?.toFixed(1) ?? '6.4'}h
+                      {overview?.reviewWaitingTimeHours && ((overview.reviewWaitingTimeHours.mean ?? 0) > 0 || (overview.reviewWaitingTimeHours.median ?? 0) > 0)
+                        ? `${(overview.reviewWaitingTimeHours.median ?? overview.reviewWaitingTimeHours.p50 ?? 0).toFixed(1)}h`
+                        : 'N/A'}
                     </span>
                   </div>
                   <div className="p-3 bg-surface rounded-lg border border-border">
                     <span className="text-xs text-slate-400 block">Review Wait (P75)</span>
                     <span className="text-xl font-bold text-amber-300 font-mono mt-1 block">
-                      {overview?.reviewWaitingTimeHours?.p75?.toFixed(1) ?? '16.8'}h
+                      {overview?.reviewWaitingTimeHours && ((overview.reviewWaitingTimeHours.mean ?? 0) > 0 || (overview.reviewWaitingTimeHours.p75 ?? 0) > 0)
+                        ? `${(overview.reviewWaitingTimeHours.p75 ?? 0).toFixed(1)}h`
+                        : 'N/A'}
                     </span>
                   </div>
                 </div>

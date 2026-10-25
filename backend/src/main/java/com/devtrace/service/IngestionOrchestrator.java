@@ -143,16 +143,19 @@ public class IngestionOrchestrator {
         if (dto.getBase() != null) pr.setBaseBranch(dto.getBase().getRef());
         if (dto.getHead() != null) pr.setHeadBranch(dto.getHead().getRef());
 
+        if (dto.getCreatedAt() != null && !dto.getCreatedAt().isBlank()) pr.setCreatedAt(Instant.parse(dto.getCreatedAt()));
+        if (dto.getUpdatedAt() != null && !dto.getUpdatedAt().isBlank()) pr.setUpdatedAt(Instant.parse(dto.getUpdatedAt()));
+        if (dto.getClosedAt() != null && !dto.getClosedAt().isBlank()) pr.setClosedAt(Instant.parse(dto.getClosedAt()));
+        if (dto.getMergedAt() != null && !dto.getMergedAt().isBlank()) {
+            pr.setMergedAt(Instant.parse(dto.getMergedAt()));
+            pr.setMerged(true);
+        } else {
+            pr.setMerged(dto.isMerged());
+        }
         pr.setDraft(dto.isDraft());
-        pr.setMerged(dto.isMerged());
         pr.setAdditions(dto.getAdditions());
         pr.setDeletions(dto.getDeletions());
         pr.setChangedFiles(dto.getChangedFiles());
-
-        if (dto.getCreatedAt() != null) pr.setCreatedAt(Instant.parse(dto.getCreatedAt()));
-        if (dto.getUpdatedAt() != null) pr.setUpdatedAt(Instant.parse(dto.getUpdatedAt()));
-        if (dto.getClosedAt() != null) pr.setClosedAt(Instant.parse(dto.getClosedAt()));
-        if (dto.getMergedAt() != null) pr.setMergedAt(Instant.parse(dto.getMergedAt()));
 
         // Process reviews and calculate review lifecycle timestamps
         pr.getReviews().clear();
