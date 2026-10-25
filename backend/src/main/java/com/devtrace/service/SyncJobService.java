@@ -85,7 +85,15 @@ public class SyncJobService {
 
         // Kick off async execution only if not dispatched to Kafka consumer
         if (!kafkaDispatched) {
-            executeSyncAsync(job.getId(), repository.getId(), forceFullSync, branch);
+            final String finalJobId = job.getId();
+            final String finalRepoId = repository.getId();
+            CompletableFuture.runAsync(() -> {
+                try {
+                    executeSync(finalJobId, finalRepoId, forceFullSync, branch);
+                } catch (Exception ex) {
+                    log.error("Async execution error for job {}: {}", finalJobId, ex.getMessage(), ex);
+                }
+            });
         }
 
         return SyncJobResponse.fromEntity(job);
