@@ -41,28 +41,38 @@ export interface SyncJob {
 
 export interface RepositoryOverview {
   repositoryId: string;
-  repositoryName: string;
+  repositoryName?: string;
+  fullName?: string;
+  defaultBranch?: string;
+  syncStatus?: string;
+  lastSyncedAt?: string;
+  timeWindowDays?: number;
   totalCommits: number;
   totalPullRequests: number;
+  openPullRequests?: number;
+  mergedPullRequests?: number;
   totalIssues: number;
+  openIssues?: number;
   totalReleases: number;
   activeContributors: number;
   prCycleTimeHours: {
     min?: number;
     p50?: number;
     median?: number;
-    p75: number;
-    p90: number;
+    p75?: number;
+    p90?: number;
     max?: number;
+    mean?: number;
     average?: number;
   };
   reviewWaitingTimeHours: {
     min?: number;
     p50?: number;
     median?: number;
-    p75: number;
+    p75?: number;
     p90?: number;
     max?: number;
+    mean?: number;
     average?: number;
   };
   healthScore: {

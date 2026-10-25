@@ -93,7 +93,9 @@ export const AnalyticsPage: React.FC = () => {
             <div className="p-4 bg-slate-900/80 rounded-xl border border-border">
               <span className="text-xs text-slate-400 uppercase font-mono">Median (P50)</span>
               <div className="text-3xl font-extrabold text-blue-400 font-mono mt-1">
-                {overview?.prCycleTimeHours?.median?.toFixed(1) ?? overview?.prCycleTimeHours?.p50?.toFixed(1) ?? '14.2'}h
+                {overview?.mergedPullRequests && overview.mergedPullRequests > 0 && overview?.prCycleTimeHours?.median !== undefined && overview.prCycleTimeHours.median > 0
+                  ? `${overview.prCycleTimeHours.median.toFixed(1)}h`
+                  : (overview?.mergedPullRequests && overview.mergedPullRequests > 0 ? '0.0h' : 'N/A')}
               </div>
               <span className="text-[11px] text-slate-500 mt-1 block">50% completed within</span>
             </div>
@@ -101,7 +103,9 @@ export const AnalyticsPage: React.FC = () => {
             <div className="p-4 bg-slate-900/80 rounded-xl border border-border">
               <span className="text-xs text-slate-400 uppercase font-mono">P75 Percentile</span>
               <div className="text-3xl font-extrabold text-slate-200 font-mono mt-1">
-                {overview?.prCycleTimeHours?.p75?.toFixed(1) ?? '28.5'}h
+                {overview?.mergedPullRequests && overview.mergedPullRequests > 0 && overview?.prCycleTimeHours?.p75 !== undefined && overview.prCycleTimeHours.p75 > 0
+                  ? `${overview.prCycleTimeHours.p75.toFixed(1)}h`
+                  : (overview?.mergedPullRequests && overview.mergedPullRequests > 0 ? '0.0h' : 'N/A')}
               </div>
               <span className="text-[11px] text-slate-500 mt-1 block">Upper quartile threshold</span>
             </div>
@@ -109,7 +113,9 @@ export const AnalyticsPage: React.FC = () => {
             <div className="p-4 bg-slate-900/80 rounded-xl border border-border">
               <span className="text-xs text-slate-400 uppercase font-mono">P90 Tail Risk</span>
               <div className="text-3xl font-extrabold text-purple-400 font-mono mt-1">
-                {overview?.prCycleTimeHours?.p90?.toFixed(1) ?? '54.0'}h
+                {overview?.mergedPullRequests && overview.mergedPullRequests > 0 && overview?.prCycleTimeHours?.p90 !== undefined && overview.prCycleTimeHours.p90 > 0
+                  ? `${overview.prCycleTimeHours.p90.toFixed(1)}h`
+                  : (overview?.mergedPullRequests && overview.mergedPullRequests > 0 ? '0.0h' : 'N/A')}
               </div>
               <span className="text-[11px] text-slate-500 mt-1 block">90% of PRs completed</span>
             </div>
@@ -133,7 +139,9 @@ export const AnalyticsPage: React.FC = () => {
             <div className="p-4 bg-slate-900/80 rounded-xl border border-border">
               <span className="text-xs text-slate-400 uppercase font-mono">Median (P50)</span>
               <div className="text-3xl font-extrabold text-amber-400 font-mono mt-1">
-                {overview?.reviewWaitingTimeHours?.median?.toFixed(1) ?? overview?.reviewWaitingTimeHours?.p50?.toFixed(1) ?? '6.4'}h
+                {overview?.reviewWaitingTimeHours && ((overview.reviewWaitingTimeHours.mean ?? 0) > 0 || (overview.reviewWaitingTimeHours.median ?? 0) > 0)
+                  ? `${(overview.reviewWaitingTimeHours.median ?? overview.reviewWaitingTimeHours.p50 ?? 0).toFixed(1)}h`
+                  : 'N/A'}
               </div>
               <span className="text-[11px] text-slate-500 mt-1 block">Standard turnaround wait</span>
             </div>
@@ -141,7 +149,9 @@ export const AnalyticsPage: React.FC = () => {
             <div className="p-4 bg-slate-900/80 rounded-xl border border-border">
               <span className="text-xs text-slate-400 uppercase font-mono">P75 Percentile</span>
               <div className="text-3xl font-extrabold text-amber-300 font-mono mt-1">
-                {overview?.reviewWaitingTimeHours?.p75?.toFixed(1) ?? '16.8'}h
+                {overview?.reviewWaitingTimeHours && ((overview.reviewWaitingTimeHours.mean ?? 0) > 0 || (overview.reviewWaitingTimeHours.p75 ?? 0) > 0)
+                  ? `${(overview.reviewWaitingTimeHours.p75 ?? 0).toFixed(1)}h`
+                  : 'N/A'}
               </div>
               <span className="text-[11px] text-slate-500 mt-1 block">Elevated wait boundary</span>
             </div>
@@ -163,7 +173,9 @@ export const AnalyticsPage: React.FC = () => {
           <div className="p-4 rounded-xl bg-slate-900/90 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-300 uppercase">Code Stability</span>
-              <span className="text-sm font-bold text-emerald-400 font-mono">{overview?.healthScore?.codeStability ?? 88}%</span>
+              <span className="text-sm font-bold text-emerald-400 font-mono">
+                {overview?.healthScore?.codeStability !== undefined ? `${overview.healthScore.codeStability}%` : '--'}
+              </span>
             </div>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed">
               Derived from commit volatility, defect-associated rework ratio, and codebase test-passing reliability.
@@ -173,7 +185,9 @@ export const AnalyticsPage: React.FC = () => {
           <div className="p-4 rounded-xl bg-slate-900/90 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-300 uppercase">Review Efficiency</span>
-              <span className="text-sm font-bold text-blue-400 font-mono">{overview?.healthScore?.reviewEfficiency ?? 82}%</span>
+              <span className="text-sm font-bold text-blue-400 font-mono">
+                {overview?.healthScore?.reviewEfficiency !== undefined ? `${overview.healthScore.reviewEfficiency}%` : '--'}
+              </span>
             </div>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed">
               Computed from median review turnaround latency and proportion of PRs receiving timely approval.
@@ -183,7 +197,9 @@ export const AnalyticsPage: React.FC = () => {
           <div className="p-4 rounded-xl bg-slate-900/90 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-300 uppercase">Release Cadence</span>
-              <span className="text-sm font-bold text-purple-400 font-mono">{overview?.healthScore?.releaseCadence ?? 79}%</span>
+              <span className="text-sm font-bold text-purple-400 font-mono">
+                {overview?.healthScore?.releaseCadence !== undefined ? `${overview.healthScore.releaseCadence}%` : '--'}
+              </span>
             </div>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed">
               Calculated from deployment regularity and interval consistency between production releases.
@@ -193,7 +209,9 @@ export const AnalyticsPage: React.FC = () => {
           <div className="p-4 rounded-xl bg-slate-900/90 border border-border">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-300 uppercase">Collaboration Resilience</span>
-              <span className="text-sm font-bold text-cyan-400 font-mono">{overview?.healthScore?.collaborationResilience ?? 85}%</span>
+              <span className="text-sm font-bold text-cyan-400 font-mono">
+                {overview?.healthScore?.collaborationResilience !== undefined ? `${overview.healthScore.collaborationResilience}%` : '--'}
+              </span>
             </div>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed">
               Derived from graph connectivity, author-reviewer cross-coverage, and absence of single-contributor silos.

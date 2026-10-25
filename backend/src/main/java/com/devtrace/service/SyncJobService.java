@@ -178,6 +178,8 @@ public class SyncJobService {
             int commitPage = 1;
             boolean hasMoreCommits = true;
             Instant latestCommitTime = null;
+            int commitDetailsLimit = 25;
+            int commitDetailsCount = 0;
 
             while (hasMoreCommits && commitPage <= 10) { // Safety ceiling per sync run
                 List<GitHubCommitDto> commits = gitHubApiClient.fetchCommits(
@@ -187,7 +189,19 @@ public class SyncJobService {
                     hasMoreCommits = false;
                 } else {
                     for (GitHubCommitDto c : commits) {
-                        ingestionOrchestrator.processCommit(repository, c, branchName);
+                        GitHubCommitDto commitToProcess = c;
+                        if (commitDetailsCount < commitDetailsLimit && c.getSha() != null) {
+                            try {
+                                GitHubCommitDto detailed = gitHubApiClient.fetchCommitDetails(repository.getOwner(), repository.getName(), c.getSha());
+                                if (detailed != null) {
+                                    commitToProcess = detailed;
+                                    commitDetailsCount++;
+                                }
+                            } catch (Exception ex) {
+                                log.warn("Failed to fetch commit details for {}: {}", c.getSha(), ex.getMessage());
+                            }
+                        }
+                        ingestionOrchestrator.processCommit(repository, commitToProcess, branchName);
                         totalProcessed++;
                         if (c.getCommit() != null && c.getCommit().getCommitter() != null && c.getCommit().getCommitter().getDate() != null) {
                             Instant t = Instant.parse(c.getCommit().getCommitter().getDate());
@@ -217,6 +231,8 @@ public class SyncJobService {
             int prPage = 1;
             boolean hasMorePrs = true;
             Instant latestPrTime = null;
+            int prDetailsLimit = 25;
+            int prDetailsCount = 0;
 
             while (hasMorePrs && prPage <= 10) {
                 List<GitHubPullRequestDto> prs = gitHubApiClient.fetchPullRequests(
@@ -226,9 +242,22 @@ public class SyncJobService {
                     hasMorePrs = false;
                 } else {
                     for (GitHubPullRequestDto pr : prs) {
+                        GitHubPullRequestDto prToProcess = pr;
+                        if (prDetailsCount < prDetailsLimit && (pr.getAdditions() == 0 && pr.getDeletions() == 0)) {
+                            try {
+                                GitHubPullRequestDto detailedPr = gitHubApiClient.fetchPullRequestDetails(
+                                        repository.getOwner(), repository.getName(), pr.getNumber());
+                                if (detailedPr != null) {
+                                    prToProcess = detailedPr;
+                                    prDetailsCount++;
+                                }
+                            } catch (Exception ex) {
+                                log.warn("Failed to fetch PR details for #{}: {}", pr.getNumber(), ex.getMessage());
+                            }
+                        }
                         List<GitHubReviewDto> reviews = gitHubApiClient.fetchPullRequestReviews(
-                                repository.getOwner(), repository.getName(), pr.getNumber());
-                        ingestionOrchestrator.processPullRequest(repository, pr, reviews);
+                                repository.getOwner(), repository.getName(), prToProcess.getNumber());
+                        ingestionOrchestrator.processPullRequest(repository, prToProcess, reviews);
                         totalProcessed++;
                         if (pr.getCreatedAt() != null) {
                             Instant t = Instant.parse(pr.getCreatedAt());

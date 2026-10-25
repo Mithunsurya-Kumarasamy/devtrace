@@ -141,7 +141,7 @@ public class PullRequestEntity {
     public boolean isDraft() { return isDraft; }
     public void setDraft(boolean draft) { isDraft = draft; }
 
-    public boolean isMerged() { return isMerged; }
+    public boolean isMerged() { return isMerged || mergedAt != null; }
     public void setMerged(boolean merged) { isMerged = merged; }
 
     public Instant getCreatedAt() { return createdAt; }

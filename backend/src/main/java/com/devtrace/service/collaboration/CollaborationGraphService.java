@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,6 +57,19 @@ public class CollaborationGraphService {
 
         // Contributor stats tracking: login -> stats
         Map<String, ContributorStats> contributorMap = new HashMap<>();
+
+        // Process repository commits to ensure all commit authors are registered
+        List<CommitEntity> allCommits = commitRepo.findByRepositoryIdAndBranchAndCommitDateBetweenOrderByCommitDateAsc(
+                repositoryId, null, Instant.EPOCH, Instant.now());
+        for (CommitEntity c : allCommits) {
+            String author = (c.getAuthorName() != null && !c.getAuthorName().isBlank()) ? c.getAuthorName() : c.getAuthorEmail();
+            if (author != null && !author.isBlank()) {
+                ContributorStats stats = contributorMap.computeIfAbsent(author, ContributorStats::new);
+                if (fileCommitDetails.isEmpty()) {
+                    stats.commitsCount++;
+                }
+            }
+        }
 
         // Process PR authors and reviews
         Map<String, PullRequestEntity> prById = new HashMap<>();

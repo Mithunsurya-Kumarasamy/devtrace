@@ -83,7 +83,7 @@ public class GitHubPullRequestDto {
     public void setBase(BranchInfo base) { this.base = base; }
     public boolean isDraft() { return draft; }
     public void setDraft(boolean draft) { this.draft = draft; }
-    public boolean isMerged() { return merged; }
+    public boolean isMerged() { return merged || (mergedAt != null && !mergedAt.isBlank()); }
     public void setMerged(boolean merged) { this.merged = merged; }
     public int getAdditions() { return additions; }
     public void setAdditions(int additions) { this.additions = additions; }
