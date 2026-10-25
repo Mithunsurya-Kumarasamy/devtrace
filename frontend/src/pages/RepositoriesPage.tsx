@@ -75,7 +75,8 @@ export const RepositoriesPage: React.FC<RepositoriesPageProps> = ({ onNavigateTa
         });
       }
 
-      setSuccessMsg(`Repository ${newRepo.fullName} connected successfully! Target branch: ${newRepo.defaultBranch}`);
+      setSuccessMsg(`Repository ${newRepo.fullName} connected successfully! Starting initial sync on ${newRepo.defaultBranch}...`);
+      api.triggerSync(newRepo.id).then(refreshRepositories).catch((e) => console.warn('Initial sync trigger failed', e));
       setRepoUrl('');
       setOwner('');
       setName('');

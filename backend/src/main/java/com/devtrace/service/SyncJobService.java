@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.util.List;
@@ -61,10 +63,10 @@ public class SyncJobService {
         job.setStatus("PENDING");
         job.setCurrentStep("QUEUED");
         job.setProgressPercentage(0);
-        job = syncJobRepo.save(job);
+        job = syncJobRepo.saveAndFlush(job);
 
         repository.setSyncStatus("PENDING");
-        repositoryRepo.save(repository);
+        repositoryRepo.saveAndFlush(repository);
 
         // Emit Kafka trigger event if Kafka is enabled and listener is active
         boolean kafkaDispatched = false;
@@ -87,13 +89,24 @@ public class SyncJobService {
         if (!kafkaDispatched) {
             final String finalJobId = job.getId();
             final String finalRepoId = repository.getId();
-            CompletableFuture.runAsync(() -> {
+            Runnable asyncTask = () -> {
                 try {
                     executeSync(finalJobId, finalRepoId, forceFullSync, branch);
                 } catch (Exception ex) {
                     log.error("Async execution error for job {}: {}", finalJobId, ex.getMessage(), ex);
                 }
-            });
+            };
+
+            if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        CompletableFuture.runAsync(asyncTask);
+                    }
+                });
+            } else {
+                CompletableFuture.runAsync(asyncTask);
+            }
         }
 
         return SyncJobResponse.fromEntity(job);
@@ -117,8 +130,19 @@ public class SyncJobService {
 
     @Transactional
     public void executeSync(String jobId, String repositoryId, boolean forceFullSync, String branch) {
-        Optional<SyncJobEntity> jobOpt = syncJobRepo.findById(jobId);
-        Optional<RepositoryEntity> repoOpt = repositoryRepo.findById(repositoryId);
+        Optional<SyncJobEntity> jobOpt = Optional.empty();
+        Optional<RepositoryEntity> repoOpt = Optional.empty();
+
+        for (int attempt = 0; attempt < 10; attempt++) {
+            jobOpt = syncJobRepo.findById(jobId);
+            repoOpt = repositoryRepo.findById(repositoryId);
+            if (jobOpt.isPresent() && repoOpt.isPresent()) {
+                break;
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ignored) {}
+        }
 
         if (jobOpt.isEmpty() || repoOpt.isEmpty()) {
             log.error("Sync job or repository not found for execution: jobId={}, repoId={}", jobId, repositoryId);
